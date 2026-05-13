@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lubrand Lubricentro</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lubrand">
+<meta name="theme-color" content="#1565c0">
+<link rel="manifest" id="pwa-manifest">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap');
+:root {
+  --bg:#0f1117; --surface:#1a1d27; --card:#22263a;
+  --accent:#1565c0; --danger:#ea5455; --success:#28c76f; --wa:#25D366;
+  --text:#eef0f8; --muted:#7a7f9a; --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;overflow-x:hidden}
+.hdr{background:linear-gradient(135deg,#0a3a8e,#1565c0);padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(10,58,142,.4)}
+.hdr h1{font-family:'Bebas Neue',sans-serif;font-size:26px;color:#ff2222;letter-spacing:1px}
+.hdr small{font-size:10px;color:#ff4444;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:block}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);display:flex;border-top:1px solid rgba(255,255,255,.07);z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,.4)}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;border:none;background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;position:relative;touch-action:manipulation}
+.nb .ni{font-size:20px;margin-bottom:2px}
+.nb.on{color:var(--accent)}
+.nb.on::after{content:'';position:absolute;top:0;left:20%;right:20%;height:3px;background:var(--accent);border-radius:0 0 3px 3px}
+.bdg{position:absolute;top:5px;right:calc(50% - 18px);background:var(--danger);color:#fff;font-size:9px;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800}
+.view{display:none;padding:14px 14px 88px}
+.view.on{display:block}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:2px;background:rgba(245,166,35,.15);border-radius:2px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sc{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid rgba(255,255,255,.06);text-align:center}
+.sc .n{font-family:sans-serif;font-size:32px;color:var(--accent);line-height:1}
+.sc .l{font-size:10px;color:var(--muted);font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.card{background:var(--card);border-radius:var(--radius);padding:13px;margin-bottom:10px;border:1px solid rgba(255,255,255,.06)}
+.cn{font-weight:800;font-size:15px}
+.cs{font-size:12px;color:var(--muted);margin-top:2px}
+.ctag{background:rgba(245,166,35,.12);color:var(--accent);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid rgba(245,166,35,.25);text-transform:uppercase}
+.ca{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.btn{flex:1;min-width:70px;padding:8px 10px;border-radius:9px;border:none;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation}
+.bp{background:var(--accent);color:#fff}
+.bs{background:rgba(255,255,255,.08);color:var(--text)}
+.bd{background:rgba(234,84,85,.15);color:var(--danger);border:1px solid rgba(234,84,85,.3)}
+.bw{background:#25D366;color:#fff}
+.bsuc{background:rgba(40,199,111,.15);color:var(--success);border:1px solid rgba(40,199,111,.3)}
+.bfull{width:100%;padding:13px;border-radius:12px;border:none;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;touch-action:manipulation;margin-top:8px;display:block}
+.bfull.p{background:linear-gradient(135deg,#0a3a8e,#1565c0);color:#fff}
+.bfull.w{background:#25D366;color:#fff}
+.bfull.exp{background:rgba(40,199,111,.2);color:var(--success);border:1px solid rgba(40,199,111,.4)}
+.bfull.imp{background:rgba(245,166,35,.2);color:#f5a623;border:1px solid rgba(245,166,35,.4)}
+.fab{position:fixed;bottom:74px;right:18px;z-index:150;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#0a3a8e,#1565c0);border:none;color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px rgba(10,58,142,.5);touch-action:manipulation}
+.mo{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center}
+.mo.on{display:flex}
+.modal{background:var(--surface);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:18px 18px 28px;max-height:90vh;overflow-y:auto}
+.mtitle{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.mclose{background:rgba(255,255,255,.08);border:none;color:var(--text);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;touch-action:manipulation}
+label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase}
+input,select,textarea{width:100%;background:var(--card);border:1px solid rgba(255,255,255,.1);color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;border-radius:10px;padding:9px 12px;margin-bottom:10px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--card)}
+textarea{resize:vertical;min-height:70px}
+.frow{display:flex;gap:8px}
+.frow>*{flex:1}
+.div{height:1px;background:rgba(255,255,255,.07);margin:12px 0}
+.sbar{position:relative;margin-bottom:12px}
+.sbar input{margin-bottom:0;padding-left:36px}
+.sbar::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
+.acl{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden;margin-top:-8px;margin-bottom:10px;max-height:160px;overflow-y:auto;display:none}
+.acl.on{display:block}
+.aci{padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);touch-action:manipulation}
+.aci small{color:var(--muted);font-weight:400;margin-left:5px}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.tg{padding:12px 10px;border-radius:11px;border:2px solid rgba(255,255,255,.13);background:var(--card);color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;min-height:46px;touch-action:manipulation;text-align:center}
+.tg.on{background:rgba(21,101,192,.2);color:var(--accent);border-color:var(--accent)}
+.rb{background:linear-gradient(135deg,rgba(234,84,85,.15),rgba(232,71,10,.15));border:1px solid rgba(234,84,85,.35);border-radius:var(--radius);padding:12px;margin-bottom:10px}
+.pill{display:inline-block;background:rgba(245,166,35,.12);color:var(--accent);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin:2px}
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty .ei{font-size:44px;margin-bottom:10px}
+.remito{background:#fff;color:#111;border-radius:12px;padding:18px;font-family:'Nunito',sans-serif}
+.remito h2{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#1565c0;margin-bottom:4px}
+.remito table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px}
+.remito th{background:#f5f5f5;padding:5px 7px;text-align:left;font-size:10px;text-transform:uppercase;color:#555}
+.remito td{padding:5px 7px;border-bottom:1px solid #eee}
+.remito .rtotal{font-weight:800;font-size:15px;text-align:right;color:#1565c0;border-top:2px solid #1565c0;padding-top:7px}
+.cinfo-box{background:rgba(21,101,192,.08);border:1px solid rgba(21,101,192,.2);border-radius:10px;padding:10px;margin-bottom:10px}
+
+/* BANNER INSTALAR PWA */
+#pwa-banner{display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:452px;background:linear-gradient(135deg,#0a3a8e,#1565c0);border-radius:14px;padding:12px 14px;z-index:250;box-shadow:0 4px 20px rgba(10,58,142,.5);align-items:center;gap:10px}
+#pwa-banner.on{display:flex}
+#pwa-banner .txt{flex:1;font-size:12px;font-weight:700;color:#fff}
+#pwa-banner .txt small{display:block;font-weight:400;opacity:.8;font-size:11px;margin-top:1px}
+#pwa-banner button{background:#fff;color:#1565c0;border:none;border-radius:8px;padding:7px 12px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;touch-action:manipulation}
+#pwa-banner .cls{background:transparent;color:rgba(255,255,255,.7);font-size:18px;padding:4px 6px;border:none;cursor:pointer}
+
+/* CONFIG SECTION */
+.cfg-box{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.cfg-box h3{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent);margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><small style="color:#ff4444">Panel de Control</small><h1 style="color:#ff2222">LUBRAND</h1></div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button onclick="goTo('config')" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;touch-action:manipulation" title="Configuracion">⚙️</button>
+  </div>
+</div>
+
+<!-- BANNER PWA -->
+<div id="pwa-banner">
+  <div class="txt">📲 Instalar como app<small>Acceso directo en tu pantalla</small></div>
+  <button id="pwa-install-btn">Instalar</button>
+  <button class="cls" onclick="cerrarBanner()">✕</button>
+</div>
+
+<div id="v-home" class="view on">
+  <div class="stitle">🏠 Inicio</div>
+  <div class="sgrid">
+    <div class="sc" onclick="goTo('clientes')" style="cursor:pointer;active:opacity:.7">
+      <div class="n" id="st-cli">0</div><div class="l">Clientes</div>
+    </div>
+    <div class="sc" onclick="goTo('turnos')" style="cursor:pointer">
+      <div class="n" id="st-tur">0</div><div class="l">Turnos</div>
+    </div>
+    <div class="sc" onclick="goTo('servicios')" style="cursor:pointer">
+      <div class="n" id="st-ser">0</div><div class="l">Servicios</div>
+    </div>
+    <div class="sc" onclick="goTo('home');setTimeout(function(){document.getElementById('rec-list').scrollIntoView({behavior:'smooth'})},100)" style="cursor:pointer">
+      <div class="n" id="st-rec" style="color:var(--danger)">0</div><div class="l">Recordatorios</div>
+    </div>
+    <div class="sc" onclick="goTo('cuentas')" style="cursor:pointer;grid-column:span 2">
+      <div class="n" id="st-cc" style="color:var(--success)">••••</div><div class="l">Cuentas Corrientes</div>
+    </div>
+  </div>
+  <button onclick="toggleEstPanel()" id="btn-est-abrir" style="width:100%;background:linear-gradient(135deg,rgba(21,101,192,.25),rgba(21,101,192,.1));border:1px solid rgba(21,101,192,.35);color:var(--text);border-radius:12px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;touch-action:manipulation;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <span>📊 Servicios por Mes</span><span id="est-arrow" style="color:var(--accent);font-size:18px">▼</span>
+  </button>
+  <div id="est-panel" style="display:none"></div>
+  <div class="stitle" style="margin-top:4px">⏰ Recordatorios de Service</div>
+  <div id="rec-list"></div>
+</div>
+
+<div id="v-clientes" class="view">
+  <div class="stitle">👤 Clientes</div>
+  <div class="sbar"><input id="q-cli" type="text" placeholder="Buscar nombre o patente..." oninput="renderClientes()"></div>
+  <div id="cli-list"></div>
+</div>
+
+<div id="v-turnos" class="view">
+  <div class="stitle">📅 Turnos</div>
+  <div class="sbar"><input id="q-tur" type="text" placeholder="Buscar turno..." oninput="renderTurnos()"></div>
+  <div id="tur-list"></div>
+</div>
+
+<div id="v-servicios" class="view">
+  <div class="stitle">🏮 Servicios</div>
+  <div class="sbar"><input id="q-ser" type="text" placeholder="Buscar servicio..." oninput="renderServicios()"></div>
+  <div id="ser-list"></div>
+</div>
+
+<div id="v-cuentas" class="view">
+  <div class="stitle">💰 Cuentas Corrientes
+    <button onclick="toggleCC()" id="btn-cc-toggle" style="background:rgba(255,255,255,.1);border:none;color:var(--text);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;touch-action:manipulation">👁 Visible</button>
+  </div>
+  <div class="sbar"><input id="q-cc" type="text" placeholder="Buscar cliente..." oninput="renderCuentas()"></div>
+  <div id="cc-list"></div>
+</div>
+
+<div id="v-config" class="view">
+  <div class="stitle">⚙️ Configuracion</div>
+
+  <!-- INSTALAR APP -->
+  <div class="cfg-box">
+    <h3>📲 Instalar como App</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Agregá Lubrand a tu pantalla de inicio para abrirla como una app sin necesidad de navegar.</p>
+    <button class="bfull p" id="btn-instalar-config" onclick="instalarApp()">📲 Instalar en pantalla de inicio</button>
+    <div id="inst-manual" style="display:none;margin-top:10px;background:rgba(21,101,192,.1);border:1px solid rgba(21,101,192,.3);border-radius:10px;padding:10px;font-size:12px;color:var(--muted)">
+      <b style="color:var(--text)">Pasos manuales en Chrome Android:</b><br>
+      1. Abrí este archivo en Chrome<br>
+      2. Tocá los <b style="color:var(--text)">⋮ tres puntitos</b> arriba<br>
+      3. Tocá <b style="color:var(--text)">"Agregar a pantalla de inicio"</b><br>
+      4. Confirmá tocando <b style="color:var(--text)">"Agregar"</b>
+    </div>
+  </div>
+
+  <!-- EXPORTAR DATOS -->
+  <div class="cfg-box">
+    <h3>💾 Exportar Datos</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Guardá una copia de seguridad de todos tus clientes, servicios, turnos y cuentas.</p>
+    <button class="bfull exp" onclick="exportarDatos()">⬇️ Exportar copia de seguridad</button>
+  </div>
+
+  <!-- IMPORTAR DATOS -->
+  <div class="cfg-box">
+    <h3>📂 Importar Datos</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Restaurá una copia de seguridad previamente exportada. <b style="color:var(--danger)">Reemplaza los datos actuales.</b></p>
+    <button class="bfull imp" onclick="document.getElementById('file-import').click()">⬆️ Importar copia de seguridad</button>
+    <input type="file" id="file-import" accept=".json" style="display:none" onchange="importarDatos(this)">
+    <div id="imp-msg" style="display:none;margin-top:8px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700"></div>
+  </div>
+
+  <!-- INFO -->
+  <div class="cfg-box">
+    <h3>ℹ️ Info</h3>
+    <div style="font-size:12px;color:var(--muted);line-height:1.8">
+      <div>📍 Lubrand Lubricentro</div>
+      <div>📌 Agustin Alvarez 1179</div>
+      <div id="info-stats" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nb on" id="nb-home" onclick="goTo('home')"><span class="ni">🏠</span>Inicio</button>
+  <button class="nb" id="nb-clientes" onclick="goTo('clientes')"><span class="ni">👤</span>Clientes</button>
+  <button class="nb" id="nb-turnos" onclick="goTo('turnos')"><span class="ni">📅</span>Turnos</button>
+  <button class="nb" id="nb-servicios" onclick="goTo('servicios')"><span class="ni">🏮</span>Servicios</button>
+  <button class="nb" id="nb-cuentas" onclick="goTo('cuentas')"><span class="ni">💰</span>Cuentas</button>
+</nav>
+<button class="fab" onclick="openFab()">+</button>
+
+<!-- MODAL CLIENTE -->
+<div class="mo" id="m-cli">
+<div class="modal">
+  <div class="mtitle">👤 <span id="m-cli-title">Nuevo Cliente</span>
+    <button class="mclose" onclick="closeM('m-cli')">X</button>
+  </div>
+  <input type="hidden" id="cli-id">
+  <button onclick="importarWA()" class="bfull w" style="margin-top:0;margin-bottom:12px;font-size:14px">💬 Importar contacto de WhatsApp</button>
+  <div id="wa-msg" style="display:none;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#28c76f;font-weight:700">Contacto importado correctamente</div>
+  <label>Nombre</label><input id="cli-nom" type="text" placeholder="Juan">
+  <label>Apellido</label><input id="cli-ape" type="text" placeholder="Perez">
+  <div class="frow">
+    <div><label>Telefono</label><input id="cli-tel" type="tel" placeholder="+54 9 11 1234-5678" style="margin-bottom:0"></div>
+    <div><label>CUIT</label><input id="cli-cuit" type="text" placeholder="20-12345678-9" style="margin-bottom:0"></div>
+  </div>
+  <div class="div"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <label style="color:var(--accent);font-size:12px;margin-bottom:0">VEHÍCULOS</label>
+    <button type="button" onclick="agregarVeh()" style="background:rgba(21,101,192,.2);border:1px solid rgba(21,101,192,.4);color:var(--accent);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;touch-action:manipulation">+ Agregar vehículo</button>
+  </div>
+  <div id="veh-lista"></div>
+  <button class="bfull p" onclick="saveCli()">Guardar Cliente</button>
+</div>
+</div>
+
+<!-- MODAL TURNO -->
+<div class="mo" id="m-tur">
+<div class="modal">
+  <div class="mtitle">📅 Nuevo Turno
+    <button class="mclose" onclick="closeM('m-tur')">X</button>
+  </div>
+  <label>Buscar Cliente</label>
+  <input id="tur-busca" type="text" placeholder="Nombre o patente..." oninput="acTurno()" autocomplete="off">
+  <div class="acl" id="tur-ac"></div>
+  <input type="hidden" id="tur-cid">
+  <div id="tur-cinfo" style="display:none" class="cinfo-box">
+    <div style="font-weight:800" id="tur-cnom"></div>
+    <div style="font-size:12px;color:var(--muted)" id="tur-cveh"></div>
+  </div>
+  <label>Fecha</label><input id="tur-fec" type="date">
+  <label>Hora</label><input id="tur-hor" type="time">
+  <label>Observaciones</label><textarea id="tur-obs" placeholder="Service de aceite, frenos..."></textarea>
+  <button class="bfull p" onclick="saveTurno()">Guardar Turno</button>
+  <button class="bfull w" onclick="waTurno()" style="margin-top:8px">📱 Enviar confirmacion por WhatsApp</button>
+</div>
+</div>
+
+<!-- MODAL SERVICIO -->
+<div class="mo" id="m-ser">
+<div class="modal">
+  <div class="mtitle">🏮 Registrar Servicio
+    <button class="mclose" onclick="closeM('m-ser')">X</button>
+  </div>
+  <label>Buscar Cliente</label>
+  <input id="ser-busca" type="text" placeholder="Nombre o patente..." oninput="acServicio()" autocomplete="off">
+  <div class="acl" id="ser-ac"></div>
+  <input type="hidden" id="ser-cid">
+  <input type="hidden" id="ser-vid">
+  <div id="ser-cinfo" style="display:none" class="cinfo-box">
+    <div style="font-weight:800" id="ser-cnom"></div>
+    <div id="ser-veh-selector"></div>
+  </div>
+  <label>Fecha del Servicio</label><input id="ser-fec" type="date">
+  <label>Kilometraje</label><input id="ser-km" type="number" placeholder="90000">
+  <label>Servicios (selecciona todos los que aplican)</label>
+  <div class="tgrid" id="ser-togs"></div>
+  <label>Observaciones</label><textarea id="ser-obs" placeholder="Detalle, repuestos, proximo service..."></textarea>
+  <label>Total Servicio ($)</label><input id="ser-total-manual" type="number" placeholder="Ej: 15000" oninput="document.getElementById('ser-tot').textContent=Number(this.value||0).toLocaleString('es-AR')">
+  <div id="ser-items" style="display:none"></div>
+  <div class="div"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+    <span style="font-weight:700">TOTAL:</span>
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent)">$<span id="ser-tot">0</span></span>
+  </div>
+  <button class="bfull p" onclick="saveServicio()">Registrar Servicio</button>
+</div>
+</div>
+
+<!-- MODAL REMITO -->
+<div class="mo" id="m-rem">
+<div class="modal">
+  <div class="mtitle">🧾 Remito
+    <button class="mclose" onclick="closeM('m-rem')">X</button>
+  </div>
+  <div id="rem-content"></div>
+  <button class="bfull w" onclick="shareRemito()" style="margin-top:12px">📱 Enviar por WhatsApp</button>
+  <button class="bfull bs" onclick="copyRemito()" style="font-size:13px">Copiar texto</button>
+</div>
+</div>
+
+<!-- MODAL VER CLIENTE -->
+<div class="mo" id="m-vcli">
+<div class="modal">
+  <div class="mtitle">👤 Cliente
+    <button class="mclose" onclick="closeM('m-vcli')">X</button>
+  </div>
+  <div id="vcli-content"></div>
+</div>
+</div>
+
+<script>
+// ========== PWA INSTALL ==========
+var deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('pwa-banner').classList.add('on');
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', instalarApp);
+
+function instalarApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(r) {
+      if (r.outcome === 'accepted') {
+        document.getElementById('pwa-banner').classList.remove('on');
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    document.getElementById('inst-manual').style.display = 'block';
+    document.getElementById('btn-instalar-config').textContent = '📲 Ver instrucciones arriba';
+  }
+}
+
+function cerrarBanner() {
+  document.getElementById('pwa-banner').classList.remove('on');
+}
+
+window.addEventListener('appinstalled', function() {
+  document.getElementById('pwa-banner').classList.remove('on');
+});
+
+// Crear manifest dinámico para PWA
+(function() {
+  var manifest = {
+    name: 'Lubrand Lubricentro',
+    short_name: 'Lubrand',
+    description: 'Sistema de gestión para Lubrand Lubricentro',
+    start_url: window.location.href,
+    display: 'standalone',
+    background_color: '#0f1117',
+    theme_color: '#1565c0',
+    orientation: 'portrait',
+    icons: [
+      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="%231565c0" rx="20"/><text x="96" y="130" font-size="100" text-anchor="middle" fill="%23ff2222" font-family="sans-serif" font-weight="bold">L</text></svg>', sizes: '192x192', type: 'image/svg+xml' },
+      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="%231565c0" rx="50"/><text x="256" y="350" font-size="280" text-anchor="middle" fill="%23ff2222" font-family="sans-serif" font-weight="bold">L</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
+    ]
+  };
+  var blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  document.getElementById('pwa-manifest').setAttribute('href', url);
+})();
+
+// ========== STORAGE ==========
+var LS = {
+  get: function(k) { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch(e) { return []; } },
+  set: function(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
+  uid: function() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+};
+
+var clientes = LS.get('lb_clientes');
+var turnos = LS.get('lb_turnos');
+var servicios = LS.get('lb_servicios');
+
+var SOPS = [
+  {k:'f_aceite', l:'F. de aceite'},
+  {k:'f_aire',   l:'F. de aire'},
+  {k:'f_comb',   l:'F. combustible'},
+  {k:'f_hab',    l:'F. habitaculo'},
+  {k:'engrase',  l:'Engrase'},
+  {k:'caja',     l:'Caja'},
+  {k:'diferencial', l:'Diferencial'}
+];
+var selTogs = {};
+var servItems = [];
+
+// ========== NAVEGACION ==========
+function goTo(v) {
+  document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('on'); });
+  document.querySelectorAll('.nb').forEach(function(el) { el.classList.remove('on'); });
+  document.getElementById('v-' + v).classList.add('on');
+  var nb = document.getElementById('nb-' + v);
+  if (nb) nb.classList.add('on');
+  renderAll();
+  if (v === 'config') renderConfigStats();
+}
+
+function openFab() {
+  var v = document.querySelector('.view.on').id.replace('v-','');
+  if (v === 'clientes') openM('m-cli', true);
+  else if (v === 'turnos') openM('m-tur', false);
+  else if (v === 'servicios') openM('m-ser', false);
+  else openM('m-tur', false);
+}
+
+function openM(id, reset) {
+  if (reset) resetCliForm();
+  document.getElementById(id).classList.add('on');
+}
+
+function closeM(id) {
+  document.getElementById(id).classList.remove('on');
+}
+
+document.querySelectorAll('.mo').forEach(function(el) {
+  el.addEventListener('click', function(e) { if (e.target === el) el.classList.remove('on'); });
+});
+
+function fFecha(s) {
+  if (!s) return '---';
+  var p = s.split('-');
+  if (p.length !== 3) return s;
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function hoy() { return new Date().toISOString().split('T')[0]; }
+
+function renderAll() {
+  renderStats();
+  renderEstadisticas();
+  renderRecordatorios();
+  renderClientes();
+  renderTurnos();
+  renderServicios();
+  renderCuentas();
+}
+
+// ========== ESTADÍSTICAS POR MES ==========
+var estVisible = true;
+
+var estVisible = true;
+var estPanelAbierto = false;
+var estMesAbierto = null;
+
+function toggleEstPanel() {
+  estPanelAbierto = !estPanelAbierto;
+  var panel = document.getElementById('est-panel');
+  var arrow = document.getElementById('est-arrow');
+  if (estPanelAbierto) {
+    panel.style.display = 'block';
+    arrow.textContent = '▲';
+    renderEstadisticas();
+  } else {
+    panel.style.display = 'none';
+    arrow.textContent = '▼';
+  }
+}
+
+function toggleEst() {
+  estVisible = !estVisible;
+  renderEstadisticas();
+}
+
+function renderEstadisticas() {
+  var el = document.getElementById('est-panel');
+  if (!el || !estPanelAbierto) return;
+
+  var anios = {};
+  servicios.forEach(function(s) { if (s.fecha) anios[s.fecha.slice(0,4)] = true; });
+  var listaAnios = Object.keys(anios).sort().reverse();
+  if (!listaAnios.length) {
+    el.innerHTML = '<div class="empty" style="padding:18px"><div class="ei" style="font-size:28px">📊</div><p style="font-size:12px">Sin servicios registrados</p></div>';
+    return;
+  }
+  var anioSel = el.dataset.anio || listaAnios[0];
+  el.dataset.anio = anioSel;
+
+  var meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var datos = {};
+  for (var m = 0; m < 12; m++) datos[m] = {cant:0, total:0, items:[]};
+  servicios.forEach(function(s) {
+    if (!s.fecha || s.fecha.slice(0,4) !== anioSel) return;
+    var mes = parseInt(s.fecha.slice(5,7)) - 1;
+    datos[mes].cant++;
+    datos[mes].total += parseFloat(s.total||0);
+    datos[mes].items.push(s);
+  });
+
+  var totalAnio = 0; var cantAnio = 0;
+  for (var m2 = 0; m2 < 12; m2++) { totalAnio += datos[m2].total; cantAnio += datos[m2].cant; }
+
+  // Botón ocultar/mostrar + selector años
+  var h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  h += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+  listaAnios.forEach(function(a) {
+    var activo = a === anioSel;
+    h += '<button onclick="cambiarAnioEst(&#39;' + a + '&#39;)" style="padding:5px 13px;border-radius:20px;border:2px solid '+(activo?'var(--accent)':'rgba(255,255,255,.15)')+';background:'+(activo?'rgba(21,101,192,.25)':'transparent')+';color:'+(activo?'var(--accent)':'var(--muted)')+';font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">'+a+'</button>';
+  });
+  h += '</div>';
+  h += '<button onclick="toggleEst()" style="background:rgba(255,255,255,.1);border:none;color:var(--text);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">'+(estVisible?'🙈 Ocultar':'👁 Visible')+'</button>';
+  h += '</div>';
+
+  // Resumen anual
+  h += '<div class="card" style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">';
+  h += '<div><div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Total '+anioSel+'</div>';
+  h += '<div style="font-size:22px;font-weight:800;color:var(--accent)">'+(estVisible?'$'+totalAnio.toLocaleString('es-AR'):'••••••')+'</div></div>';
+  h += '<div style="text-align:right"><div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Servicios</div>';
+  h += '<div style="font-size:22px;font-weight:800">'+(estVisible?cantAnio:'••')+'</div></div>';
+  h += '</div>';
+
+  // Meses — tocando cada uno despliega el detalle
+  for (var m3 = 11; m3 >= 0; m3--) {
+    var d = datos[m3];
+    if (!d.cant) continue;
+    var pct = totalAnio > 0 ? Math.round(d.total/totalAnio*100) : 0;
+    var abierto = estMesAbierto === (anioSel+'-'+m3);
+    h += '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden">';
+    // Cabecera del mes — toca para abrir
+    h += '<div onclick="toggleMes(&#39;' + anioSel + '&#39;,' + m3 + ')" style="padding:11px 13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;touch-action:manipulation">';
+    h += '<div><div style="font-weight:800;font-size:14px">'+meses[m3]+'</div>';
+    if (estVisible) h += '<div style="font-size:11px;color:var(--muted)">'+ d.cant +' servicio'+(d.cant!==1?'s':'')+'</div>';
+    h += '</div>';
+    h += '<div style="text-align:right;display:flex;align-items:center;gap:10px">';
+    h += '<div style="font-size:15px;color:var(--accent);font-weight:800">'+(estVisible?'$'+d.total.toLocaleString('es-AR'):'••••')+'</div>';
+    h += '<span style="color:var(--accent);font-size:14px">'+(abierto?'▲':'▼')+'</span>';
+    h += '</div></div>';
+    // Barra progreso
+    if (estVisible) {
+      h += '<div style="margin:0 13px 8px;background:rgba(255,255,255,.07);border-radius:6px;height:4px;overflow:hidden">';
+      h += '<div style="width:'+pct+'%;height:100%;background:var(--accent);border-radius:6px"></div></div>';
+    }
+    // Detalle servicios del mes (si está abierto)
+    if (abierto) {
+      h += '<div style="border-top:1px solid rgba(255,255,255,.07);padding:10px 13px">';
+      d.items.sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
+      d.items.forEach(function(s) {
+        var c = null;
+        for (var ci=0;ci<clientes.length;ci++){if(clientes[ci].id===s.clienteId){c=clientes[ci];break;}}
+        var nom = c ? c.nombre+' '+(c.apellido||'') : '---';
+        var pat = '';
+        if (c) {
+          var vi = s.vehiculoIdx||0;
+          var vehs = (c.vehiculos&&c.vehiculos.length)?c.vehiculos:(c.patente?[{patente:c.patente}]:[]);
+          pat = vehs[vi] ? (vehs[vi].patente||'') : (c.patente||'');
+        }
+        h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">';
+        h += '<div><div style="font-size:13px;font-weight:700">'+nom+'</div>';
+        h += '<div style="font-size:11px;color:var(--muted)">'+fFecha(s.fecha)+(pat?' | '+pat:'')+'</div>';
+        h += '<div style="font-size:11px;color:var(--muted)">'+s.tipo+'</div></div>';
+        h += '<div style="font-size:13px;font-weight:800;color:var(--accent)">'+(estVisible?'$'+Number(s.total||0).toLocaleString('es-AR'):'••••')+'</div>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+  }
+  if (!cantAnio) {
+    h += '<div style="text-align:center;padding:10px;font-size:12px;color:var(--muted)">Sin servicios en '+anioSel+'</div>';
+  }
+  el.innerHTML = h;
+}
+
+function toggleMes(anio, mes) {
+  var key = anio+'-'+mes;
+  estMesAbierto = estMesAbierto === key ? null : key;
+  renderEstadisticas();
+}
+
+function cambiarAnioEst(anio) {
+  estMesAbierto = null;
+  var el = document.getElementById('est-panel');
+  if (el) el.dataset.anio = anio;
+  renderEstadisticas();
+}
+
+function renderStats() {
+  document.getElementById('st-cli').textContent = clientes.length;
+  document.getElementById('st-tur').textContent = turnos.length;
+  document.getElementById('st-ser').textContent = servicios.length;
+  var r = calcRec().length;
+  document.getElementById('st-rec').textContent = r;
+  // Cuentas corrientes: siempre oculto en inicio
+  document.getElementById('st-cc').textContent = '••••';
+  var b = document.querySelector('#nb-home .bdg');
+  if (r > 0) {
+    if (!b) { b = document.createElement('span'); b.className = 'bdg'; document.getElementById('nb-home').appendChild(b); }
+    b.textContent = r;
+  } else { if (b) b.remove(); }
+}
+
+function renderConfigStats() {
+  var el = document.getElementById('info-stats');
+  if (!el) return;
+  el.innerHTML = '<b style="color:var(--text)">Datos guardados:</b><br>'
+    + '👤 ' + clientes.length + ' clientes<br>'
+    + '📅 ' + turnos.length + ' turnos<br>'
+    + '🏮 ' + servicios.length + ' servicios';
+}
+
+// ========== EXPORTAR / IMPORTAR ==========
+function exportarDatos() {
+  var datos = {
+    version: '1.0',
+    fecha: new Date().toISOString(),
+    clientes: LS.get('lb_clientes'),
+    turnos: LS.get('lb_turnos'),
+    servicios: LS.get('lb_servicios'),
+    cuentas: LS.get('lb_cuentas')
+  };
+  var blob = new Blob([JSON.stringify(datos, null, 2)], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var fecha = new Date().toLocaleDateString('es-AR').replace(/\//g,'-');
+  a.href = url;
+  a.download = 'lubrand-backup-' + fecha + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importarDatos(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var msg = document.getElementById('imp-msg');
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var datos = JSON.parse(e.target.result);
+      if (!datos.clientes && !datos.servicios) throw new Error('Archivo invalido');
+      if (!confirm('¿Seguro que querés reemplazar todos los datos actuales con esta copia de seguridad?')) {
+        input.value = '';
+        return;
+      }
+      if (datos.clientes) { LS.set('lb_clientes', datos.clientes); clientes = datos.clientes; }
+      if (datos.turnos) { LS.set('lb_turnos', datos.turnos); turnos = datos.turnos; }
+      if (datos.servicios) { LS.set('lb_servicios', datos.servicios); servicios = datos.servicios; }
+      if (datos.cuentas) { LS.set('lb_cuentas', datos.cuentas); }
+      msg.style.display = 'block';
+      msg.style.background = 'rgba(40,199,111,.15)';
+      msg.style.border = '1px solid rgba(40,199,111,.4)';
+      msg.style.color = 'var(--success)';
+      msg.textContent = '✅ Datos importados correctamente (' + (datos.clientes||[]).length + ' clientes, ' + (datos.servicios||[]).length + ' servicios)';
+      renderAll();
+      renderConfigStats();
+    } catch(err) {
+      msg.style.display = 'block';
+      msg.style.background = 'rgba(234,84,85,.15)';
+      msg.style.border = '1px solid rgba(234,84,85,.4)';
+      msg.style.color = 'var(--danger)';
+      msg.textContent = '❌ Error: Archivo no válido. Asegurate de usar una copia exportada desde Lubrand.';
+    }
+    input.value = '';
+    setTimeout(function() { msg.style.display = 'none'; }, 5000);
+  };
+  reader.readAsText(file);
+}
+
+// ========== CLIENTES ==========
+// ========== MULTI-VEHÍCULO ==========
+var cliVehiculos = [{marca:'',modelo:'',anio:'',patente:'',km:''}];
+
+function renderVehLista() {
+  var wrap = document.getElementById('veh-lista');
+  if (!wrap) return;
+  var h = '';
+  cliVehiculos.forEach(function(v, i) {
+    h += '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:11px;margin-bottom:10px">';
+    if (cliVehiculos.length > 1) {
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+      h += '<span style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px">Vehículo ' + (i+1) + '</span>';
+      h += '<button type="button" onclick="quitarVeh(' + i + ')" style="background:rgba(234,84,85,.2);border:1px solid rgba(234,84,85,.3);color:var(--danger);border-radius:7px;padding:3px 9px;font-size:12px;font-weight:700;cursor:pointer">Quitar</button>';
+      h += '</div>';
+    }
+    h += '<div class="frow">';
+    h += '<div><label>Marca</label><input type="text" placeholder="Toyota" value="' + (v.marca||'') + '" oninput="cliVehiculos[' + i + '].marca=this.value" style="margin-bottom:8px"></div>';
+    h += '<div><label>Modelo</label><input type="text" placeholder="Corolla" value="' + (v.modelo||'') + '" oninput="cliVehiculos[' + i + '].modelo=this.value" style="margin-bottom:8px"></div>';
+    h += '</div>';
+    h += '<div class="frow">';
+    h += '<div><label>Año</label><input type="number" placeholder="2018" value="' + (v.anio||'') + '" oninput="cliVehiculos[' + i + '].anio=this.value" style="margin-bottom:8px"></div>';
+    h += '<div><label>Patente</label><input type="text" placeholder="AB123CD" value="' + (v.patente||'') + '" oninput="cliVehiculos[' + i + '].patente=this.value.toUpperCase()" style="text-transform:uppercase;margin-bottom:8px"></div>';
+    h += '</div>';
+    h += '<label>Kilometraje</label><input type="number" placeholder="85000" value="' + (v.km||'') + '" oninput="cliVehiculos[' + i + '].km=this.value" style="margin-bottom:0">';
+    h += '</div>';
+  });
+  wrap.innerHTML = h;
+}
+
+function agregarVeh() {
+  cliVehiculos.push({marca:'',modelo:'',anio:'',patente:'',km:''});
+  renderVehLista();
+}
+
+function quitarVeh(i) {
+  if (cliVehiculos.length <= 1) { alert('Debe haber al menos un vehículo'); return; }
+  cliVehiculos.splice(i, 1);
+  renderVehLista();
+}
+
+function resetCliForm() {
+  ['cli-id','cli-nom','cli-ape','cli-tel','cli-cuit'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('m-cli-title').textContent = 'Nuevo Cliente';
+  cliVehiculos = [{marca:'',modelo:'',anio:'',patente:'',km:''}];
+  setTimeout(renderVehLista, 50);
+}
+
+function saveCli() {
+  var nom = document.getElementById('cli-nom').value.trim();
+  if (!nom) { alert('Ingresa el nombre'); return; }
+  // Limpiar vehículos vacíos pero conservar al menos los que tengan patente o marca
+  var vehs = cliVehiculos.filter(function(v){ return v.marca||v.modelo||v.patente; });
+  if (!vehs.length) vehs = [];
+  // compatibilidad: primer vehículo como campos raíz
+  var v0 = vehs[0] || {};
+  var obj = {
+    nombre: nom,
+    apellido: document.getElementById('cli-ape').value.trim(),
+    telefono: document.getElementById('cli-tel').value.trim(),
+    cuit: document.getElementById('cli-cuit').value.trim(),
+    marca: v0.marca||'', modelo: v0.modelo||'', anio: v0.anio||'',
+    patente: (v0.patente||'').toUpperCase(), km: v0.km||'',
+    vehiculos: vehs
+  };
+  var eid = document.getElementById('cli-id').value;
+  if (eid) {
+    for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === eid) { Object.assign(clientes[i], obj); break; } }
+  } else {
+    obj.id = LS.uid(); clientes.push(obj);
+  }
+  LS.set('lb_clientes', clientes);
+  closeM('m-cli'); renderAll();
+}
+
+function editCli(id) {
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === id) { c = clientes[i]; break; } }
+  if (!c) return;
+  document.getElementById('cli-id').value = c.id;
+  document.getElementById('cli-nom').value = c.nombre || '';
+  document.getElementById('cli-ape').value = c.apellido || '';
+  document.getElementById('cli-tel').value = c.telefono || '';
+  document.getElementById('cli-cuit').value = c.cuit || '';
+  // Cargar vehículos: si tiene array usar ese, sino construir desde campos raíz
+  if (c.vehiculos && c.vehiculos.length) {
+    cliVehiculos = c.vehiculos.map(function(v){ return {marca:v.marca||'',modelo:v.modelo||'',anio:v.anio||'',patente:v.patente||'',km:v.km||''}; });
+  } else {
+    cliVehiculos = [{marca:c.marca||'',modelo:c.modelo||'',anio:c.anio||'',patente:c.patente||'',km:c.km||''}];
+  }
+  renderVehLista();
+  document.getElementById('m-cli-title').textContent = 'Editar Cliente';
+  openM('m-cli', false);
+}
+
+function delCli(id) {
+  if (!confirm('¿Borrar este cliente?')) return;
+  clientes = clientes.filter(function(x) { return x.id !== id; });
+  LS.set('lb_clientes', clientes); renderAll();
+}
+
+function verCli(id) {
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === id) { c = clientes[i]; break; } }
+  if (!c) return;
+  var hist = servicios.filter(function(s) { return s.clienteId === id; });
+  hist.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+  var h = '';
+  h += '<div style="font-size:20px;font-weight:800">' + c.nombre + ' ' + (c.apellido || '') + '</div>';
+  h += '<div style="color:var(--muted);margin:4px 0 12px">Tel: ' + (c.telefono || 'Sin telefono') + '</div>';
+  var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}];
+  vehs.forEach(function(v,vi){
+    h += '<div class="card">';
+    h += '<div style="color:var(--accent);font-weight:700;margin-bottom:6px">Vehículo ' + (vehs.length>1?vi+1:'') + '</div>';
+    h += '<span class="pill">' + (v.marca||'---') + '</span><span class="pill">' + (v.modelo||'---') + '</span><span class="pill">' + (v.anio||'---') + '</span>';
+    h += '<div style="margin-top:6px;font-size:12px;color:var(--muted)">Patente: <b style="color:var(--text)">' + (v.patente||'---') + '</b> | KM: <b style="color:var(--text)">' + (v.km?Number(v.km).toLocaleString():'---') + '</b></div>';
+    h += '</div>';
+  });
+  h += '<div class="card">';
+  h += '<div style="color:var(--accent);font-weight:700;margin-bottom:6px">Servicios (' + hist.length + ')</div>';
+  if (!hist.length) { h += '<div style="font-size:12px;color:var(--muted)">Sin servicios</div>'; }
+  else { hist.forEach(function(s) {
+    h += '<div style="border-bottom:1px solid rgba(255,255,255,.06);padding:6px 0;font-size:12px">';
+    h += '<b>' + fFecha(s.fecha) + '</b> -- ' + s.tipo;
+    if (s.total) h += ' <span style="color:var(--accent);font-weight:700">$' + Number(s.total).toLocaleString('es-AR') + '</span>';
+    h += '</div>';
+  }); }
+  h += '</div>';
+  h += '<div class="ca">';
+  if (c.telefono) h += '<button class="btn bw" onclick="waContacto(\'' + c.id + '\')">WA</button>';
+  h += '<button class="btn bp" onclick="closeM(\'m-vcli\');preCli(\'tur\',\'' + c.id + '\')">Nuevo Turno</button>';
+  h += '<button class="btn bp" onclick="closeM(\'m-vcli\');preCli(\'ser\',\'' + c.id + '\')">Nuevo Servicio</button>';
+  h += '</div>';
+  document.getElementById('vcli-content').innerHTML = h;
+  openM('m-vcli', false);
+}
+
+function waContacto(id) {
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === id) { c = clientes[i]; break; } }
+  if (!c || !c.telefono) return;
+  var tel = c.telefono.replace(/[^0-9]/g, '');
+  window.open('https://wa.me/' + tel, '_blank');
+}
+
+function preCli(tipo, cid) {
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
+  if (!c) return;
+  if (tipo === 'tur') {
+    goTo('turnos');
+    setTimeout(function() {
+      openM('m-tur', false);
+      document.getElementById('tur-busca').value = c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '');
+      document.getElementById('tur-cid').value = c.id;
+      showTurInfo(c);
+    }, 100);
+  } else {
+    goTo('servicios');
+    setTimeout(function() {
+      openM('m-ser', false);
+      document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '');
+      document.getElementById('ser-cid').value = c.id;
+      showSerInfo(c);
+    }, 100);
+  }
+}
+
+function renderClientes() {
+  var q = (document.getElementById('q-cli').value || '').toLowerCase();
+  var list = clientes.filter(function(c) {
+    var pats = (c.vehiculos||[]).map(function(v){return v.patente||'';}).join(' ');
+    return (c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '') + ' ' + pats).toLowerCase().indexOf(q) !== -1;
+  });
+  list.sort(function(a, b) { return a.nombre.localeCompare(b.nombre); });
+  var el = document.getElementById('cli-list');
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="ei">👤</div><p>No hay clientes</p></div>'; return; }
+  var h = '';
+  list.forEach(function(c) {
+    var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : (c.marca||c.patente ? [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}] : []);
+    var v0 = vehs[0]||{};
+    var veh = [v0.marca,v0.modelo,v0.anio].filter(Boolean).join(' ');
+    h += '<div class="card">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:flex-start">';
+    h += '<div><div class="cn">' + c.nombre + ' ' + (c.apellido || '') + '</div>';
+    h += '<div class="cs">Tel: ' + (c.telefono || '---') + '</div>';
+    if (veh) h += '<div class="cs">Auto: ' + veh + (vehs.length>1?' <span style="color:var(--accent);font-size:10px;font-weight:700">(+'+( vehs.length-1)+' más)</span>':'') + '</div>';
+    if (v0.patente) h += '<div class="cs">Patente: ' + v0.patente + '</div>';
+    h += '</div><span class="ctag">' + (v0.patente || '---') + '</span></div>';
+    h += '<div class="ca">';
+    h += '<button class="btn bp" onclick="verCli(\'' + c.id + '\')">Ver</button>';
+    h += '<button class="btn bs" onclick="editCli(\'' + c.id + '\')">Editar</button>';
+    if (c.telefono) h += '<button class="btn bw" onclick="waContacto(\'' + c.id + '\')">WA</button>';
+    h += '<button class="btn bd" onclick="delCli(\'' + c.id + '\')">Borrar</button>';
+    h += '</div></div>';
+  });
+  el.innerHTML = h;
+}
+
+async function importarWA() {
+  if (!('contacts' in navigator && 'ContactsManager' in window)) {
+    var tel = prompt('Importacion directa no disponible.\nIngresa el numero manualmente:');
+    if (tel) document.getElementById('cli-tel').value = tel;
+    return;
+  }
+  try {
+    var props = ['name', 'tel'];
+    var r = await navigator.contacts.select(props, {multiple: false});
+    if (!r || !r.length) return;
+    var ct = r[0];
+    var full = (ct.name && ct.name[0]) || '';
+    var p = full.trim().split(' ');
+    document.getElementById('cli-nom').value = p[0] || '';
+    document.getElementById('cli-ape').value = p.slice(1).join(' ') || '';
+    var telVal = (ct.tel && ct.tel[0]) || '';
+    document.getElementById('cli-tel').value = telVal;
+    var msg = document.getElementById('wa-msg');
+    if (msg) { msg.style.display = 'block'; setTimeout(function() { msg.style.display = 'none'; }, 3000); }
+  } catch(e) {
+    alert('Error al importar. Ingresa los datos manualmente.');
+  }
+}
+
+// ========== TURNOS ==========
+function acTurno() {
+  var q = document.getElementById('tur-busca').value.toLowerCase();
+  var ac = document.getElementById('tur-ac');
+  if (q.length < 2) { ac.classList.remove('on'); return; }
+  var m = [];
+  for (var i = 0; i < clientes.length; i++) {
+    var c = clientes[i];
+    if ((c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '')).toLowerCase().indexOf(q) !== -1) m.push(c);
+    if (m.length >= 5) break;
+  }
+  if (!m.length) { ac.classList.remove('on'); return; }
+  var h = '';
+  m.forEach(function(c) {
+    h += '<div class="aci" onclick="selTurCli(\'' + c.id + '\')">' + c.nombre + ' ' + (c.apellido || '') + '<small>' + (c.patente || '') + '</small></div>';
+  });
+  ac.innerHTML = h; ac.classList.add('on');
+}
+
+function selTurCli(id) {
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === id) { c = clientes[i]; break; } }
+  if (!c) return;
+  document.getElementById('tur-busca').value = c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '');
+  document.getElementById('tur-cid').value = id;
+  document.getElementById('tur-ac').classList.remove('on');
+  showTurInfo(c);
+}
+
+function showTurInfo(c) {
+  document.getElementById('tur-cnom').textContent = c.nombre + ' ' + (c.apellido || '');
+  document.getElementById('tur-cveh').textContent = 'Auto: ' + [c.marca, c.modelo, c.anio].filter(Boolean).join(' ') + ' ' + (c.patente || '');
+  document.getElementById('tur-cinfo').style.display = 'block';
+}
+
+function saveTurno() {
+  var cid = document.getElementById('tur-cid').value;
+  var fec = document.getElementById('tur-fec').value;
+  if (!cid) { alert('Selecciona un cliente'); return; }
+  if (!fec) { alert('Ingresa la fecha'); return; }
+  var t = {
+    id: LS.uid(), clienteId: cid, fecha: fec,
+    hora: document.getElementById('tur-hor').value,
+    obs: document.getElementById('tur-obs').value.trim(),
+    creadoEn: new Date().toISOString()
+  };
+  turnos.push(t);
+  LS.set('lb_turnos', turnos);
+  document.getElementById('tur-busca').value = '';
+  document.getElementById('tur-cid').value = '';
+  document.getElementById('tur-fec').value = hoy();
+  document.getElementById('tur-hor').value = '';
+  document.getElementById('tur-obs').value = '';
+  document.getElementById('tur-cinfo').style.display = 'none';
+  document.getElementById('tur-ac').classList.remove('on');
+  closeM('m-tur'); renderAll();
+}
+
+function waTurno() {
+  var cid = document.getElementById('tur-cid').value;
+  var fec = document.getElementById('tur-fec').value;
+  var hor = document.getElementById('tur-hor').value;
+  if (!cid) { alert('Selecciona un cliente primero'); return; }
+  if (!fec) { alert('Ingresa la fecha del turno'); return; }
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
+  if (!c || !c.telefono) { alert('El cliente no tiene telefono cargado'); return; }
+  var tel = c.telefono.replace(/[^0-9]/g, '');
+  var msg = 'Hola ' + c.nombre + ', te confirmamos tu turno para service.\n\nFecha: ' + fFecha(fec) + (hor ? '\nHora: ' + hor : '') + '\n\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function completarTurno(id) {
+  var cid = ''; var fec = '';
+  for (var i = 0; i < turnos.length; i++) { if (turnos[i].id === id) { cid = turnos[i].clienteId; fec = turnos[i].fecha; break; } }
+  turnos = turnos.filter(function(x) { return x.id !== id; });
+  LS.set('lb_turnos', turnos);
+  var c = null;
+  for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === cid) { c = clientes[j]; break; } }
+  goTo('servicios');
+  setTimeout(function() {
+    openM('m-ser', false);
+    if (c) {
+      document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '');
+      document.getElementById('ser-cid').value = c.id;
+      showSerInfo(c);
+    }
+    document.getElementById('ser-fec').value = fec || hoy();
+  }, 150);
+}
+
+function delTurno(id) {
+  if (!confirm('¿Borrar este turno?')) return;
+  turnos = turnos.filter(function(x) { return x.id !== id; });
+  LS.set('lb_turnos', turnos); renderTurnos(); renderStats();
+}
+
+function waTurnoCard(tid) {
+  var t = null;
+  for (var i = 0; i < turnos.length; i++) { if (turnos[i].id === tid) { t = turnos[i]; break; } }
+  if (!t) return;
+  var c = null;
+  for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === t.clienteId) { c = clientes[j]; break; } }
+  if (!c || !c.telefono) { alert('Sin telefono'); return; }
+  var tel = c.telefono.replace(/[^0-9]/g, '');
+  var msg = 'Hola ' + c.nombre + ', te confirmamos tu turno para service.\n\nFecha: ' + fFecha(t.fecha) + (t.hora ? '\nHora: ' + t.hora : '') + '\n\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function renderTurnos() {
+  var q = (document.getElementById('q-tur').value || '').toLowerCase();
+  var el = document.getElementById('tur-list');
+  var list = turnos.filter(function(t) {
+    var c = null;
+    for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === t.clienteId) { c = clientes[i]; break; } }
+    var label = (c ? c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '') : '') + ' ' + t.fecha;
+    return label.toLowerCase().indexOf(q) !== -1;
+  });
+  list.sort(function(a, b) { return a.fecha.localeCompare(b.fecha); });
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="ei">📅</div><p>No hay turnos</p></div>'; return; }
+  var h = '';
+  list.forEach(function(t) {
+    var c = null;
+    for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === t.clienteId) { c = clientes[i]; break; } }
+    var nom = c ? c.nombre + ' ' + (c.apellido || '') : '---';
+    var veh = c ? [c.marca, c.modelo, c.patente].filter(Boolean).join(' - ') : '';
+    h += '<div class="card">';
+    h += '<div class="cn">' + nom + '</div>';
+    if (veh) h += '<div class="cs">' + veh + '</div>';
+    h += '<div class="cs">Fecha: ' + fFecha(t.fecha) + (t.hora ? ' | Hora: ' + t.hora : '') + '</div>';
+    if (t.obs) h += '<div class="cs">Obs: ' + t.obs + '</div>';
+    h += '<div class="ca">';
+    if (c && c.telefono) h += '<button class="btn bw" onclick="waTurnoCard(\'' + t.id + '\')">WA</button>';
+    h += '<button class="btn bsuc" onclick="completarTurno(\'' + t.id + '\')">Completar</button>';
+    h += '<button class="btn bd" onclick="delTurno(\'' + t.id + '\')">Borrar</button>';
+    h += '</div></div>';
+  });
+  el.innerHTML = h;
+}
+
+// ========== SERVICIOS ==========
+function initTogs() {
+  var wrap = document.getElementById('ser-togs');
+  var h = '';
+  SOPS.forEach(function(op) {
+    h += '<button type="button" class="tg" id="tg-' + op.k + '" onclick="togSer(\'' + op.k + '\')">' + op.l + '</button>';
+  });
+  wrap.innerHTML = h;
+}
+
+function togSer(k) {
+  selTogs[k] = !selTogs[k];
+  var btn = document.getElementById('tg-' + k);
+  if (selTogs[k]) btn.classList.add('on'); else btn.classList.remove('on');
+}
+
+function resetTogs() {
+  selTogs = {};
+  SOPS.forEach(function(op) { var b = document.getElementById('tg-' + op.k); if (b) b.classList.remove('on'); });
+  var tm = document.getElementById('ser-total-manual'); if (tm) tm.value = '';
+  document.getElementById('ser-tot').textContent = '0';
+}
+
+function getTipo() {
+  var arr = [];
+  SOPS.forEach(function(op) { if (selTogs[op.k]) arr.push(op.l); });
+  return arr.join(', ');
+}
+
+function acServicio() {
+  var q = document.getElementById('ser-busca').value.toLowerCase();
+  var ac = document.getElementById('ser-ac');
+  if (q.length < 2) { ac.classList.remove('on'); return; }
+  var m = [];
+  for (var i = 0; i < clientes.length; i++) {
+    var c = clientes[i];
+    if ((c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '')).toLowerCase().indexOf(q) !== -1) m.push(c);
+    if (m.length >= 5) break;
+  }
+  if (!m.length) { ac.classList.remove('on'); return; }
+  var h = '';
+  m.forEach(function(c) {
+    h += '<div class="aci" onclick="selSerCli(\'' + c.id + '\')">' + c.nombre + ' ' + (c.apellido || '') + '<small>' + (c.patente || '') + '</small></div>';
+  });
+  ac.innerHTML = h; ac.classList.add('on');
+}
+
+function selSerCli(id) {
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === id) { c = clientes[i]; break; } }
+  if (!c) return;
+  document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
+  document.getElementById('ser-cid').value = id;
+  document.getElementById('ser-ac').classList.remove('on');
+  showSerInfo(c);
+}
+
+function showSerInfo(c) {
+  document.getElementById('ser-cnom').textContent = c.nombre + ' ' + (c.apellido || '');
+  document.getElementById('ser-cinfo').style.display = 'block';
+  // Armar lista de vehículos
+  var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : (c.marca||c.patente ? [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}] : []);
+  var sel = document.getElementById('ser-veh-selector');
+  if (!vehs.length) { sel.innerHTML = '<div style="font-size:12px;color:var(--muted)">Sin vehículos cargados</div>'; return; }
+  // Si tiene uno solo lo selecciona directo
+  if (vehs.length === 1) {
+    document.getElementById('ser-vid').value = '0';
+    var v = vehs[0];
+    sel.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'') + '</div>';
+    if (v.km) document.getElementById('ser-km').value = v.km;
+    return;
+  }
+  // Varios vehículos: mostrar botones para elegir
+  var h = '<div style="font-size:11px;color:var(--muted);font-weight:700;margin:6px 0 4px;text-transform:uppercase;letter-spacing:.5px">Elegí el vehículo:</div>';
+  vehs.forEach(function(v, i) {
+    var label = [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'');
+    h += '<button type="button" id="ser-vbtn-'+i+'" onclick="selSerVeh('+i+')" style="display:block;width:100%;text-align:left;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:var(--text);border-radius:9px;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:6px;touch-action:manipulation">'+label+'</button>';
+  });
+  sel.innerHTML = h;
+  document.getElementById('ser-vid').value = '';
+}
+
+function selSerVeh(idx) {
+  var cid = document.getElementById('ser-cid').value;
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
+  if (!c) return;
+  var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}];
+  // Resaltar botón seleccionado
+  vehs.forEach(function(_, i) {
+    var btn = document.getElementById('ser-vbtn-'+i);
+    if (btn) btn.style.borderColor = i===idx ? 'var(--accent)' : 'rgba(255,255,255,.1)';
+    if (btn) btn.style.background = i===idx ? 'rgba(21,101,192,.2)' : 'rgba(255,255,255,.06)';
+  });
+  document.getElementById('ser-vid').value = idx;
+  // Prellenar KM del vehículo elegido
+  var v = vehs[idx];
+  if (v && v.km) document.getElementById('ser-km').value = v.km;
+}
+
+function saveServicio() {
+  var cid = document.getElementById('ser-cid').value;
+  var fec = document.getElementById('ser-fec').value;
+  var tipo = getTipo();
+  if (!cid) { alert('Selecciona un cliente'); return; }
+  if (!tipo) { alert('Selecciona al menos un servicio'); return; }
+  if (!fec) { alert('Ingresa la fecha'); return; }
+  var totEl = document.getElementById('ser-total-manual');
+  var tot = totEl ? parseFloat(totEl.value || '0') || 0 : 0;
+  var sopsSeleccionados = [];
+  SOPS.forEach(function(op) { if (selTogs[op.k]) sopsSeleccionados.push(op.l); });
+  var vidx = document.getElementById('ser-vid').value;
+  var kmVal = document.getElementById('ser-km').value.trim();
+  var s = {
+    id: LS.uid(), clienteId: cid, fecha: fec,
+    vehiculoIdx: vidx !== '' ? parseInt(vidx) : 0,
+    km: kmVal,
+    tipo: tipo,
+    sops: sopsSeleccionados,
+    detalle: document.getElementById('ser-obs').value.trim(),
+    items: [],
+    total: tot,
+    avisado: false,
+    creadoEn: new Date().toISOString()
+  };
+  servicios.push(s);
+  // Actualizar km del vehículo correcto
+  for (var i = 0; i < clientes.length; i++) {
+    if (clientes[i].id === cid && kmVal) {
+      var vi = s.vehiculoIdx || 0;
+      if (clientes[i].vehiculos && clientes[i].vehiculos[vi]) {
+        clientes[i].vehiculos[vi].km = kmVal;
+        clientes[i].km = kmVal;
+      } else {
+        clientes[i].km = kmVal;
+      }
+      break;
+    }
+  }
+  LS.set('lb_clientes', clientes);
+  LS.set('lb_servicios', servicios);
+  resetSerForm(); closeM('m-ser'); renderAll();
+}
+
+function resetSerForm() {
+  document.getElementById('ser-busca').value = '';
+  document.getElementById('ser-cid').value = '';
+  document.getElementById('ser-vid').value = '';
+  document.getElementById('ser-fec').value = hoy();
+  document.getElementById('ser-km').value = '';
+  document.getElementById('ser-obs').value = '';
+  document.getElementById('ser-cinfo').style.display = 'none';
+  document.getElementById('ser-veh-selector').innerHTML = '';
+  document.getElementById('ser-ac').classList.remove('on');
+  resetTogs();
+}
+
+function delServicio(id) {
+  if (!confirm('¿Borrar este servicio?')) return;
+  servicios = servicios.filter(function(x) { return x.id !== id; });
+  LS.set('lb_servicios', servicios); renderServicios(); renderStats();
+}
+
+function verRemito(id) {
+  var s = null;
+  for (var i = 0; i < servicios.length; i++) { if (servicios[i].id === id) { s = servicios[i]; break; } }
+  if (!s) return;
+  var c = null;
+  for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === s.clienteId) { c = clientes[j]; break; } }
+  var nom = c ? c.nombre + ' ' + (c.apellido || '') : '---';
+  var veh = c ? [c.marca, c.modelo, c.anio].filter(Boolean).join(' ') + (c.patente ? ' - ' + c.patente : '') : '---';
+  var km = s.km ? Number(s.km).toLocaleString() : '---';
+  var filas = '';
+  var listaServ = s.sops && s.sops.length ? s.sops : (s.tipo ? s.tipo.split(', ') : []);
+  listaServ.forEach(function(sv) { if (sv) filas += '<tr><td>' + sv + '</td><td style="text-align:center">1</td></tr>'; });
+  if (s.items && s.items.length) { s.items.forEach(function(it) { if (it.desc) filas += '<tr><td>' + it.desc + '</td><td style="text-align:center">' + it.qty + '</td></tr>'; }); }
+  if (!filas) filas = '<tr><td colspan="2">Sin descripcion</td></tr>';
+  var h = '<div class="remito">';
+  h += '<h2>LUBRAND</h2>';
+  h += '<div style="font-size:11px;color:#555;margin-bottom:12px">Fecha: ' + fFecha(s.fecha) + ' | N: ' + s.id.slice(-6).toUpperCase() + '</div>';
+  h += '<div style="font-size:13px;margin-bottom:4px"><b>Cliente:</b> ' + nom + '</div>';
+  h += '<div style="font-size:13px;margin-bottom:4px"><b>Vehiculo:</b> ' + veh + '</div>';
+  h += '<div style="font-size:13px;margin-bottom:12px"><b>KM actuales:</b> ' + km + '</div>';
+  h += '<table><thead><tr><th>Descripcion</th><th>Cant</th></tr></thead><tbody>' + filas + '</tbody></table>';
+  if (s.detalle) h += '<div style="font-size:12px;color:#555;margin-top:8px;font-style:italic">' + s.detalle + '</div>';
+  h += '<div class="rtotal" style="margin-top:14px">TOTAL: $' + Number(s.total || 0).toLocaleString('es-AR') + '</div>';
+  h += '<div style="margin-top:12px;font-size:11px;color:#888">Lubrand Lubricentro - Agustin Alvarez 1179</div>';
+  h += '</div>';
+  document.getElementById('rem-content').innerHTML = h;
+  window._rs = s; window._rc = c;
+  openM('m-rem', false);
+}
+
+function shareRemito() {
+  var s = window._rs; var c = window._rc;
+  if (!s || !c) return;
+  var nom = c.nombre + ' ' + (c.apellido || '');
+  var veh = [c.marca, c.modelo, c.anio].filter(Boolean).join(' ') + (c.patente ? ' - ' + c.patente : '');
+  var km = s.km ? Number(s.km).toLocaleString() : '---';
+  var listaServ = s.sops && s.sops.length ? s.sops : (s.tipo ? s.tipo.split(', ') : []);
+  var lineas = '';
+  listaServ.forEach(function(sv) { if (sv) lineas += '\n- ' + sv; });
+  var obs = s.detalle ? '\n\n' + s.detalle : '';
+  var total = s.total ? '\n\n*TOTAL: $' + Number(s.total).toLocaleString('es-AR') + '*' : '';
+  var sep = '\n------------------------------';
+  var msg = '*LUBRAND Lubricentro*'
+    + '\nFecha: ' + fFecha(s.fecha) + ' | N: ' + s.id.slice(-6).toUpperCase()
+    + sep + '\n*Cliente:* ' + nom + '\n*Vehiculo:* ' + veh + '\n*KM actuales:* ' + km
+    + sep + '\n*Descripcion:*' + lineas + obs + total
+    + '\n' + sep + '\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
+  var tel = c.telefono ? (c.telefono.replace(/[^0-9]/g, '')) : '';
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function copyRemito() {
+  var s = window._rs; var c = window._rc;
+  if (!s || !c) return;
+  var txt = 'LUBRAND N:' + s.id.slice(-6) + '\nFecha: ' + fFecha(s.fecha) + '\nCliente: ' + c.nombre + ' ' + (c.apellido || '') + '\nPatente: ' + (c.patente || '') + '\nServicio: ' + s.tipo + '\nTotal: $' + Number(s.total || 0).toLocaleString('es-AR');
+  navigator.clipboard.writeText(txt).then(function() { alert('Copiado!'); });
+}
+
+function waServDetalle(sid) {
+  var s = null;
+  for (var i = 0; i < servicios.length; i++) { if (servicios[i].id === sid) { s = servicios[i]; break; } }
+  if (!s) return;
+  var c = null;
+  for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === s.clienteId) { c = clientes[j]; break; } }
+  if (!c || !c.telefono) { alert('Sin telefono'); return; }
+  var tel = c.telefono.replace(/[^0-9]/g, '');
+  var veh = [c.marca, c.modelo].filter(Boolean).join(' ') || 'vehiculo';
+  var msg = 'Hola ' + c.nombre + ', te informamos que realizamos el service de tu ' + veh + '.' + (s.detalle ? '\n\n' + s.detalle : '') + (s.total ? '\n\nTotal: $' + Number(s.total).toLocaleString('es-AR') : '') + '\n\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function renderServicios() {
+  var q = (document.getElementById('q-ser').value || '').toLowerCase();
+  var el = document.getElementById('ser-list');
+  var list = servicios.filter(function(s) {
+    var c = null;
+    for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === s.clienteId) { c = clientes[i]; break; } }
+    return (c ? c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '') : ' ' + s.tipo).toLowerCase().indexOf(q) !== -1;
+  });
+  list.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="ei">🏮</div><p>No hay servicios</p></div>'; return; }
+  var h = '';
+  list.forEach(function(s) {
+    var c = null;
+    for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === s.clienteId) { c = clientes[i]; break; } }
+    var nom = c ? c.nombre + ' ' + (c.apellido || '') : '---';
+    var veh = c ? [c.marca, c.modelo, c.patente].filter(Boolean).join(' - ') : '';
+    h += '<div class="card">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:flex-start">';
+    h += '<div><div class="cn">' + nom + '</div>';
+    if (veh) h += '<div class="cs">' + veh + '</div>';
+    h += '<div class="cs">Fecha: ' + fFecha(s.fecha) + (s.km ? ' | KM: ' + Number(s.km).toLocaleString() : '') + '</div>';
+    h += '<div style="margin-top:4px"><span class="pill">' + s.tipo + '</span></div></div>';
+    if (s.total) h += '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--accent)">$' + Number(s.total).toLocaleString('es-AR') + '</div>';
+    h += '</div><div class="ca">';
+    h += '<button class="btn bp" onclick="verRemito(\'' + s.id + '\')">Remito</button>';
+    if (c && c.telefono) h += '<button class="btn bw" onclick="waServDetalle(\'' + s.id + '\')">WA</button>';
+    h += '<button class="btn bsuc" onclick="enviarCC(\'' + s.id + '\')">💰 CC</button>';
+    h += '<button class="btn bd" onclick="delServicio(\'' + s.id + '\')">Borrar</button>';
+    h += '</div></div>';
+  });
+  el.innerHTML = h;
+}
+
+// ========== RECORDATORIOS ==========
+function calcRec() {
+  var hoyMs = new Date().getTime();
+  var out = [];
+  for (var i = 0; i < clientes.length; i++) {
+    var c = clientes[i];
+    var hist = [];
+    for (var j = 0; j < servicios.length; j++) {
+      if (servicios[j].clienteId === c.id && !servicios[j].avisado) hist.push(servicios[j]);
+    }
+    if (!hist.length) continue;
+    hist.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+    var ult = hist[0];
+    var dias = Math.floor((hoyMs - new Date(ult.fecha).getTime()) / (24 * 60 * 60 * 1000));
+    if (dias >= 90) out.push({c: c, s: ult, dias: dias});
+  }
+  return out;
+}
+
+function waRec(cid) {
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
+  if (!c) return;
+  var tel = (c.telefono || '').replace(/[^0-9]/g, '');
+  if (!tel) { alert('Sin telefono cargado'); return; }
+  var hist = [];
+  for (var j = 0; j < servicios.length; j++) { if (servicios[j].clienteId === cid) hist.push(servicios[j]); }
+  hist.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+  var ult = hist[0];
+  var dias = ult ? Math.floor((Date.now() - new Date(ult.fecha).getTime()) / (24 * 60 * 60 * 1000)) : 90;
+  var nom = c.nombre + (c.apellido ? ' ' + c.apellido : '');
+  var msg = 'Hola ' + nom + ' te recordamos que pasaron ' + dias + ' dias de tu ultimo service. Recorda chequear tus fluidos y ver si estas proximo al servicio para reservar tu turno.\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+  if (ult) {
+    for (var k = 0; k < servicios.length; k++) { if (servicios[k].id === ult.id) { servicios[k].avisado = true; break; } }
+    LS.set('lb_servicios', servicios);
+    setTimeout(function() { renderRecordatorios(); renderStats(); }, 300);
+  }
+}
+
+function renderRecordatorios() {
+  var recs = calcRec();
+  var el = document.getElementById('rec-list');
+  if (!recs.length) { el.innerHTML = '<div class="empty"><div class="ei">✅</div><p>Sin recordatorios pendientes</p></div>'; return; }
+  var h = '';
+  recs.forEach(function(r) {
+    var c = r.c;
+    var vencFec = new Date(new Date(r.s.fecha).getTime() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString('es-AR');
+    h += '<div class="rb">';
+    h += '<div style="display:flex;gap:10px;align-items:flex-start">';
+    h += '<div style="font-size:22px">⚠️</div>';
+    h += '<div><div style="font-weight:800;color:var(--danger)">' + c.nombre + ' ' + (c.apellido || '') + '</div>';
+    h += '<div style="font-size:12px;color:var(--muted)">' + (c.patente || '') + ' ' + [c.marca, c.modelo].filter(Boolean).join(' ') + '</div>';
+    h += '<div style="font-size:12px;color:var(--muted)">Ultimo service: ' + fFecha(r.s.fecha) + '</div>';
+    h += '<div style="font-size:12px;color:var(--danger);font-weight:700">' + r.dias + ' dias | Vence: ' + vencFec + '</div>';
+    h += '</div></div>';
+    if (c.telefono) {
+      h += '<button onclick="waRec(\'' + c.id + '\')" style="margin-top:10px;width:100%;padding:12px;border-radius:10px;border:none;background:#25D366;color:#fff;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation">Enviar recordatorio por WhatsApp</button>';
+    }
+    h += '</div>';
+  });
+  el.innerHTML = h;
+}
+
+// ========== CUENTAS CORRIENTES ==========
+var cuentas = LS.get('lb_cuentas');
+var ccVisible = false;
+
+function toggleCC() {
+  ccVisible = !ccVisible;
+  var btn = document.getElementById('btn-cc-toggle');
+  btn.textContent = ccVisible ? '🙈 Ocultar' : '👁 Visible';
+  renderCuentas();
+}
+
+function enviarCC(sid) {
+  var s = null;
+  for (var i = 0; i < servicios.length; i++) { if (servicios[i].id === sid) { s = servicios[i]; break; } }
+  if (!s) return;
+  var c = null;
+  for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === s.clienteId) { c = clientes[j]; break; } }
+  if (!c) return;
+  var entrada = {
+    id: LS.uid(), servicioId: s.id, clienteId: s.clienteId,
+    clienteNom: c.nombre + ' ' + (c.apellido || ''),
+    vehiculo: [c.marca, c.modelo, c.patente].filter(Boolean).join(' '),
+    fecha: s.fecha, tipo: s.tipo, total: s.total || 0,
+    estado: 'pendiente', creadoEn: new Date().toISOString()
+  };
+  var existe = false;
+  for (var k = 0; k < cuentas.length; k++) { if (cuentas[k].servicioId === s.id) { existe = true; break; } }
+  if (existe) { alert('Este servicio ya esta en Cuentas Corrientes.'); return; }
+  cuentas.push(entrada);
+  LS.set('lb_cuentas', cuentas);
+  alert('Remito enviado a Cuentas Corrientes.');
+  renderCuentas();
+}
+
+function pagarCC(id) {
+  for (var i = 0; i < cuentas.length; i++) { if (cuentas[i].id === id) { cuentas[i].estado = 'pagado'; cuentas[i].fechaPago = hoy(); break; } }
+  LS.set('lb_cuentas', cuentas); renderCuentas();
+}
+
+function delCC(id) {
+  if (!confirm('¿Borrar esta cuenta?')) return;
+  cuentas = cuentas.filter(function(x) { return x.id !== id; });
+  LS.set('lb_cuentas', cuentas); renderCuentas();
+}
+
+function renderCuentas() {
+  var q = (document.getElementById('q-cc') ? document.getElementById('q-cc').value : '').toLowerCase();
+  var el = document.getElementById('cc-list');
+  if (!el) return;
+  var list = cuentas.filter(function(x) {
+    return x.clienteNom.toLowerCase().indexOf(q) !== -1 || x.vehiculo.toLowerCase().indexOf(q) !== -1;
+  }).sort(function(a, b) { return new Date(b.creadoEn) - new Date(a.creadoEn); });
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="ei">💰</div><p>No hay cuentas corrientes</p></div>'; return; }
+  var pendTotal = 0;
+  list.forEach(function(x) { if (x.estado === 'pendiente') pendTotal += x.total; });
+  var montoTotal = ccVisible ? '$' + pendTotal.toLocaleString('es-AR') : '••••••';
+  var h = '<div class="card" style="margin-bottom:14px;background:rgba(21,101,192,.08);border-color:rgba(21,101,192,.3)">';
+  h += '<div style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Total pendiente</div>';
+  h += '<div style="font-size:32px;font-weight:800;color:var(--accent)">' + montoTotal + '</div>';
+  h += '</div>';
+  list.forEach(function(x) {
+    var pag = x.estado === 'pagado';
+    h += '<div class="card">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:flex-start">';
+    h += '<div><div class="cn">' + x.clienteNom + '</div>';
+    h += '<div class="cs">' + x.vehiculo + '</div>';
+    h += '<div class="cs">Fecha: ' + fFecha(x.fecha) + '</div>';
+    h += '<div class="cs" style="margin-top:3px">' + x.tipo + '</div></div>';
+    h += '<div style="text-align:right">';
+    h += '<div style="font-size:20px;font-weight:800;color:' + (pag ? 'var(--success)' : 'var(--accent)') + '">' + (ccVisible ? '$' + Number(x.total).toLocaleString('es-AR') : '••••') + '</div>';
+    h += '<span class="ctag">' + (pag ? 'Pagado' : 'Pendiente') + '</span>';
+    h += '</div></div>';
+    h += '<div class="ca">';
+    if (!pag) h += '<button class="btn bsuc" onclick="pagarCC(\'' + x.id + '\')">Marcar pagado</button>';
+    h += '<button class="btn bp" onclick="verRemito(\'' + x.servicioId + '\')">Ver Remito</button>';
+    h += '<button class="btn bd" onclick="delCC(\'' + x.id + '\')">Borrar</button>';
+    h += '</div></div>';
+  });
+  el.innerHTML = h;
+}
+
+// ========== INIT ==========
+document.getElementById('tur-fec').value = hoy();
+document.getElementById('ser-fec').value = hoy();
+initTogs();
+renderAll();
+</script>
+</body>
+</html>
