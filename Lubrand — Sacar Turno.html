@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)file:///C:/Users/GERMAN/Downloads/turnos_4.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lubrand Turnos">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1117">
+<title>Lubrand — Sacar Turno</title>
+<link href="./Lubrand — Sacar Turno_files/css2" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDu-Zv4AxnWyVeX0zkg7KC7QeEfPL6Yl48",
+    authDomain: "lubrand-turnos.firebaseapp.com",
+    projectId: "lubrand-turnos",
+    storageBucket: "lubrand-turnos.firebasestorage.app",
+    messagingSenderId: "195172045902",
+    appId: "1:195172045902:web:806d1448daf9f3783f5f1f",
+    measurementId: "G-CZBE93C4V1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Exponer db globalmente
+  window._db = db;
+  window._collection = collection;
+  window._addDoc = addDoc;
+  window._getDocs = getDocs;
+  window._query = query;
+  window._where = where;
+  window._Timestamp = Timestamp;
+  window._firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+  :root {
+    --black: #0f1117;
+    --white: #eef0f8;
+    --orange: #1565c0;
+    --orange-light: #1976d2;
+    --gray: #1a1d27;
+    --gray2: #22263a;
+    --gray3: #2d3250;
+    --muted: #7a7f9a;
+    --green: #28c76f;
+    --red: #ea5455;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0a3a8e 0%, #1565c0 100%);
+    padding: 40px 24px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    background: var(--orange);
+    border-radius: 50%;
+    opacity: 0.07;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .logo-box {
+    width: 44px; height: 44px;
+    background: var(--orange);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .logo-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .logo-name span { color: var(--orange); }
+
+  .header-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .header-sub { color: var(--muted); font-size: 15px; }
+
+  /* STEPS */
+  .steps {
+    display: flex;
+    gap: 6px;
+    padding: 16px 24px;
+    background: var(--gray);
+    border-bottom: 1px solid #222;
+  }
+
+  .step-bar {
+    flex: 1;
+    height: 3px;
+    background: #333;
+    border-radius: 2px;
+    transition: background 0.4s;
+  }
+
+  .step-bar.done { background: var(--orange); }
+  .step-bar.active { background: var(--orange-light); }
+
+  .step-label {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 8px 24px 0;
+    font-family: 'Syne', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* SCREENS */
+  .screen { display: none; padding: 24px; }
+  .screen.active { display: block; }
+
+  /* SECTION TITLE */
+  .stitle {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+
+  /* SERVICE CARDS */
+  .service-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .svc-card {
+    background: var(--gray);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 18px 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .svc-card:active { transform: scale(0.97); }
+  .svc-card.sel { border-color: var(--orange); background: rgba(232,83,10,0.1); }
+
+  .svc-icon { font-size: 30px; margin-bottom: 10px; }
+  .svc-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .svc-dur { font-size: 11px; color: var(--muted); }
+
+  /* CALENDAR */
+  .calendar {
+    background: var(--gray);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+
+  .cal-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .cal-month { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; }
+
+  .cal-btn {
+    background: #2a2a2a;
+    border: none;
+    color: var(--white);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 8px;
+  }
+
+  .cal-wday {
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 0;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .cal-day.empty { cursor: default; }
+  .cal-day.past { color: #333; cursor: default; }
+  .cal-day.sunday { color: #444; cursor: default; }
+  .cal-day.today { border: 2px solid var(--orange); color: var(--orange); }
+  .cal-day.avail::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 4px; height: 4px;
+    background: var(--green);
+    border-radius: 50%;
+  }
+  .cal-day.sel { background: var(--orange); color: white; }
+  .cal-day.sel::after { display: none; }
+  .cal-day:not(.past):not(.sunday):not(.empty):hover:not(.sel) { background: #2a2a2a; }
+
+  /* SLOTS */
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .slot {
+    background: var(--gray);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .slot.taken { color: #333; cursor: default; font-size: 12px; font-weight: 400; text-decoration: line-through; }
+  .slot.sel { border-color: var(--orange); background: rgba(232,83,10,0.12); color: var(--orange); }
+  .slot:not(.taken):not(.sel):hover { border-color: #444; }
+  .slot-tag { font-size: 9px; color: var(--muted); font-weight: 400; margin-top: 2px; font-family: 'DM Sans'; }
+  .slot.free .slot-tag { color: var(--green); }
+
+  /* FIELDS */
+  .field { margin-bottom: 16px; }
+
+  .flabel {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .finput {
+    width: 100%;
+    background: var(--gray);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .finput:focus { border-color: var(--orange); }
+  .finput::placeholder { color: #444; }
+
+  /* CONFIRM CARD */
+  .ccard {
+    background: var(--gray);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .crow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .crow:last-child { border-bottom: none; padding-bottom: 0; }
+  .ckey { font-size: 13px; color: var(--muted); }
+  .cval { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; text-align: right; max-width: 60%; }
+
+  /* BUTTONS */
+  .btn {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 17px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary { background: var(--orange); color: white; }
+  .btn-primary:hover { background: var(--orange-light); }
+  .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
+
+  .btn-secondary {
+    background: transparent;
+    border: 2px solid #333;
+    color: var(--muted);
+  }
+
+  .btn-secondary:hover { border-color: #555; color: var(--white); }
+
+  .btn-loading { opacity: 0.7; pointer-events: none; }
+
+  /* SUCCESS */
+  .success-wrap {
+    padding: 32px 24px 40px;
+    text-align: center;
+  }
+
+  .success-icon {
+    width: 88px; height: 88px;
+    background: rgba(34,197,94,0.12);
+    border: 3px solid var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 24px;
+    animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes pop {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .success-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .success-sub { color: var(--muted); font-size: 15px; margin-bottom: 32px; line-height: 1.5; }
+
+  /* TICKET */
+  .ticket {
+    background: var(--gray);
+    border-radius: 18px;
+    padding: 24px;
+    border: 1px solid #2a2a2a;
+    text-align: left;
+    margin-bottom: 28px;
+    position: relative;
+  }
+
+  .ticket::before, .ticket::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 36px;
+    background: var(--black);
+    border: 1px solid #222;
+  }
+
+  .ticket::before { left: -2px; border-radius: 0 18px 18px 0; border-left: none; }
+  .ticket::after { right: -2px; border-radius: 18px 0 0 18px; border-right: none; }
+
+  .ticket-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+  }
+
+  .ticket-hora {
+    font-family: 'Syne', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .ticket-fecha { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+
+  .ticket-div {
+    border: none;
+    border-top: 1px dashed #333;
+    margin: 16px 0;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--red);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    transition: transform 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* LOADING OVERLAY */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .loading-overlay.show { display: flex; }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid #333;
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .slide-up {
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Guardando turno...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-row">
+    <div class="logo-box">🔧</div>
+    <div class="logo-name">Lub<span>rand</span></div>
+  </div>
+  <div class="header-title">Sacá tu turno<br>en segundos</div>
+  <div class="header-sub">Sin llamadas · Sin esperas</div>
+</div>
+
+<!-- STEPS BAR -->
+<div class="steps" id="steps-bar">
+  <div class="step-bar active" id="sb1"></div>
+  <div class="step-bar" id="sb2"></div>
+  <div class="step-bar" id="sb3"></div>
+</div>
+<div class="step-label" id="step-label">Paso 1 de 3 — Elegí el servicio</div>
+
+<!-- SCREEN 1: SERVICIO -->
+<div class="screen active slide-up" id="s1">
+  <div class="stitle">¿Qué necesitás?</div>
+  <div class="service-grid">
+    <div class="svc-card" onclick="pickService(this,&#39;Cambio de aceite&#39;,&#39;&#39;)">
+      <div class="svc-icon">🛢️</div>
+      <div class="svc-name">Cambio de aceite</div>
+    </div>
+    <div class="svc-card" onclick="pickService(this,&#39;Revisión general&#39;,&#39;&#39;)">
+      <div class="svc-icon">🔍</div>
+      <div class="svc-name">Revisión general</div>
+    </div>
+    <div class="svc-card" onclick="pickService(this,&#39;Diagnosis&#39;,&#39;&#39;)">
+      <div class="svc-icon">💻</div>
+      <div class="svc-name">Diagnosis</div>
+    </div>
+    <div class="svc-card" onclick="pickService(this,&#39;Filtros&#39;,&#39;&#39;)">
+      <div class="svc-icon">🌀</div>
+      <div class="svc-name">Filtros</div>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="btn1" disabled="" onclick="goTo(2)">Continuar →</button>
+</div>
+
+<!-- SCREEN 2: FECHA Y HORA -->
+<div class="screen slide-up" id="s2">
+  <div class="stitle">Elegí el día</div>
+  <div class="calendar">
+    <div class="cal-nav">
+      <button class="cal-btn" onclick="prevMonth()">‹</button>
+      <span class="cal-month" id="cal-title">Mayo 2026</span>
+      <button class="cal-btn" onclick="nextMonth()">›</button>
+    </div>
+    <div class="cal-weekdays">
+      <div class="cal-wday">D</div>
+      <div class="cal-wday">L</div>
+      <div class="cal-wday">M</div>
+      <div class="cal-wday">X</div>
+      <div class="cal-wday">J</div>
+      <div class="cal-wday">V</div>
+      <div class="cal-wday">S</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day past">1</div><div class="cal-day past">2</div><div class="cal-day past">3</div><div class="cal-day past">4</div><div class="cal-day past">5</div><div class="cal-day past">6</div><div class="cal-day past">7</div><div class="cal-day past">8</div><div class="cal-day past">9</div><div class="cal-day past">10</div><div class="cal-day past">11</div><div class="cal-day past">12</div><div class="cal-day past">13</div><div class="cal-day past">14</div><div class="cal-day past">15</div><div class="cal-day past">16</div><div class="cal-day past">17</div><div class="cal-day past">18</div><div class="cal-day past">19</div><div class="cal-day avail today" onclick="pickDay(20, &#39;2026-05-20&#39;)">20</div><div class="cal-day avail" onclick="pickDay(21, &#39;2026-05-21&#39;)">21</div><div class="cal-day avail" onclick="pickDay(22, &#39;2026-05-22&#39;)">22</div><div class="cal-day avail" onclick="pickDay(23, &#39;2026-05-23&#39;)">23</div><div class="cal-day sunday">24</div><div class="cal-day avail" onclick="pickDay(25, &#39;2026-05-25&#39;)">25</div><div class="cal-day avail" onclick="pickDay(26, &#39;2026-05-26&#39;)">26</div><div class="cal-day avail" onclick="pickDay(27, &#39;2026-05-27&#39;)">27</div><div class="cal-day avail" onclick="pickDay(28, &#39;2026-05-28&#39;)">28</div><div class="cal-day avail" onclick="pickDay(29, &#39;2026-05-29&#39;)">29</div><div class="cal-day avail" onclick="pickDay(30, &#39;2026-05-30&#39;)">30</div><div class="cal-day sunday">31</div></div>
+  </div>
+
+  <div id="slots-wrap" style="display:none">
+    <div class="stitle">Horarios disponibles</div>
+    <div class="slots-grid" id="slots-grid"></div>
+  </div>
+
+  <button class="btn btn-primary" id="btn2" disabled="" onclick="goTo(3)">Continuar →</button>
+  <button class="btn btn-secondary" onclick="goTo(1)">← Atrás</button>
+</div>
+
+<!-- SCREEN 3: DATOS -->
+<div class="screen slide-up" id="s3">
+  <div class="stitle">Tu turno</div>
+  <div class="ccard">
+    <div class="crow"><span class="ckey">Servicio</span><span class="cval" id="cf-srv">—</span></div>
+    <div class="crow"><span class="ckey">Fecha</span><span class="cval" id="cf-fecha">—</span></div>
+    <div class="crow"><span class="ckey">Hora</span><span class="cval" id="cf-hora">—</span></div>
+  </div>
+
+  <div class="stitle">Tus datos</div>
+
+  <div class="field">
+    <label class="flabel">Nombre y apellido *</label>
+    <input class="finput" type="text" id="inp-nombre" placeholder="Ej: Carlos García">
+  </div>
+  <div class="field">
+    <label class="flabel">WhatsApp *</label>
+    <input class="finput" type="tel" id="inp-tel" placeholder="+54 9 11 1234-5678">
+  </div>
+  <div class="field">
+    <label class="flabel">Vehículo *</label>
+    <input class="finput" type="text" id="inp-auto" placeholder="Ej: Ford Focus 2019">
+  </div>
+  <div class="field">
+    <label class="flabel">Patente *</label>
+    <input class="finput" type="text" id="inp-pat" placeholder="Ej: AB 123 CD" style="text-transform:uppercase">
+  </div>
+  <div class="field">
+    <label class="flabel">Observaciones (opcional)</label>
+    <input class="finput" type="text" id="inp-obs" placeholder="Ej: el auto hace ruido al frenar">
+  </div>
+
+  <button class="btn btn-primary" onclick="confirmar()">✓ Confirmar Turno</button>
+  <button class="btn btn-secondary" onclick="goTo(2)">← Atrás</button>
+</div>
+
+<!-- SCREEN SUCCESS -->
+<div class="screen" id="s-ok">
+  <div class="success-wrap">
+    <div class="success-icon">✓</div>
+    <div class="success-title">¡Turno confirmado!</div>
+    <div class="success-sub">Tu turno está reservado.<br>Te esperamos en Lubrand.</div>
+
+    <div class="ticket">
+      <div class="ticket-num" id="tk-num">TURNO #LB-0000</div>
+      <div class="ticket-hora" id="tk-hora">—</div>
+      <div class="ticket-fecha" id="tk-fecha">—</div>
+      <hr class="ticket-div">
+      <div class="crow"><span class="ckey">Cliente</span><span class="cval" id="tk-nombre">—</span></div>
+      <div class="crow"><span class="ckey">Servicio</span><span class="cval" id="tk-srv">—</span></div>
+      <div class="crow"><span class="ckey">Vehículo</span><span class="cval" id="tk-auto">—</span></div>
+      <div class="crow"><span class="ckey">Patente</span><span class="cval" id="tk-pat">—</span></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="location.reload()">+ Nuevo turno</button>
+  </div>
+</div>
+
+<script>
+  // ===== ESTADO =====
+  let svc = null, svcDur = null;
+  let selDate = null, selDateStr = null;
+  let selSlot = null;
+  let curYear, curMonth;
+
+  const today = new Date();
+  curYear = today.getFullYear();
+  curMonth = today.getMonth();
+
+  // Horarios disponibles por defecto
+  const SLOTS_SEMANA = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+  const SLOTS_SABADO = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00'];
+  // Slots por defecto (se pisa con Firebase)
+  const OCUPADOS_DEFAULT = [];
+
+  // ===== NAVEGACIÓN =====
+  function goTo(n) {
+    document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.classList.remove('slide-up'); });
+    const target = n === 'ok' ? document.getElementById('s-ok') : document.getElementById('s' + n);
+    target.classList.add('active');
+    setTimeout(() => target.classList.add('slide-up'), 10);
+    window.scrollTo(0, 0);
+
+    // Steps bar
+    const labels = ['', 'Paso 1 de 3 — Elegí el servicio', 'Paso 2 de 3 — Fecha y horario', 'Paso 3 de 3 — Tus datos'];
+    if (typeof n === 'number') {
+      document.getElementById('step-label').textContent = labels[n];
+      ['sb1','sb2','sb3'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.className = 'step-bar';
+        if (i + 1 < n) el.classList.add('done');
+        else if (i + 1 === n) el.classList.add('active');
+      });
+      document.querySelector('.steps').style.display = 'flex';
+      document.getElementById('step-label').style.display = 'block';
+    } else {
+      document.querySelector('.steps').style.display = 'none';
+      document.getElementById('step-label').style.display = 'none';
+    }
+
+    if (n === 3) fillConfirm();
+  }
+
+  // ===== SERVICIO =====
+  function pickService(el, name, dur) {
+    document.querySelectorAll('.svc-card').forEach(c => c.classList.remove('sel'));
+    el.classList.add('sel');
+    svc = name;
+    svcDur = dur;
+    document.getElementById('btn1').disabled = false;
+  }
+
+  // ===== CALENDARIO =====
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+  function buildCalendar() {
+    document.getElementById('cal-title').textContent = MESES[curMonth] + ' ' + curYear;
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+
+    const first = new Date(curYear, curMonth, 1).getDay(); // 0=Dom
+    const days = new Date(curYear, curMonth + 1, 0).getDate();
+
+    for (let i = 0; i < first; i++) {
+      grid.innerHTML += '<div class="cal-day empty"></div>';
+    }
+
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(curYear, curMonth, d);
+      const dayOfWeek = date.getDay();
+      const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const isSun = dayOfWeek === 0; // domingo bloqueado
+      const isToday = date.toDateString() === today.toDateString();
+      const dateStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isSelDate = selDateStr === dateStr;
+
+      let cls = 'cal-day';
+      if (isPast) cls += ' past';
+      else if (isSun) cls += ' sunday';
+      else cls += ' avail';
+      if (isToday && !isPast) cls += ' today';
+      if (isSelDate) cls += ' sel';
+
+      const onclick = (!isPast && !isSun) ? `onclick="pickDay(${d}, '${dateStr}')"` : '';
+      grid.innerHTML += `<div class="${cls}" ${onclick}>${d}</div>`;
+    }
+  }
+
+  function pickDay(d, dateStr) {
+    selDate = new Date(curYear, curMonth, d);
+    selDateStr = dateStr;
+    buildCalendar();
+    selSlot = null;
+    document.getElementById('btn2').disabled = true;
+
+    document.getElementById('slots-wrap').style.display = 'block';
+    document.getElementById('slots-grid').innerHTML = '<div style="grid-column:span 3;text-align:center;color:#7a7f9a;padding:16px">Consultando disponibilidad...</div>';
+
+    if (window._firebaseReady) {
+      cargarHorariosOcupados(dateStr);
+    } else {
+      document.addEventListener('firebaseReady', function() {
+        cargarHorariosOcupados(dateStr);
+      });
+    }
+  }
+
+  async function cargarHorariosOcupados(dateStr) {
+    try {
+      const snap = await window._getDocs(window._collection(window._db, 'turnos'));
+      const ocupados = [];
+      snap.forEach(function(d) {
+        const t = d.data();
+        if (t.fecha === dateStr && t.estado !== 'atendido') {
+          ocupados.push(t.hora);
+        }
+      });
+      // Elegir slots según día de la semana
+      const diaSemana = selDate.getDay(); // 6 = sábado
+      const slotsDelDia = diaSemana === 6 ? SLOTS_SABADO : SLOTS_SEMANA;
+      buildSlots(slotsDelDia, ocupados);
+    } catch(e) {
+      const diaSemana = selDate.getDay();
+      const slotsDelDia = diaSemana === 6 ? SLOTS_SABADO : SLOTS_SEMANA;
+      buildSlots(slotsDelDia, OCUPADOS_DEFAULT);
+    }
+  }
+
+  function buildSlots(slots, ocupados) {
+    const grid = document.getElementById('slots-grid');
+    grid.innerHTML = '';
+    slots.forEach(hora => {
+      const isTaken = ocupados.includes(hora);
+      const isSel = selSlot === hora;
+      let cls = 'slot';
+      if (isTaken) cls += ' taken';
+      else { cls += ' free'; if (isSel) cls += ' sel'; }
+      const onclick = !isTaken ? `onclick="pickSlot(this,'${hora}')"` : '';
+      grid.innerHTML += `<div class="${cls}" ${onclick}>${hora}<div class="slot-tag">${isTaken ? 'Ocupado' : 'Libre'}</div></div>`;
+    });
+  }
+
+  function pickSlot(el, hora) {
+    document.querySelectorAll('.slot.free').forEach(s => s.classList.remove('sel'));
+    el.classList.add('sel');
+    selSlot = hora;
+    document.getElementById('btn2').disabled = false;
+  }
+
+  function prevMonth() {
+    curMonth--;
+    if (curMonth < 0) { curMonth = 11; curYear--; }
+    buildCalendar();
+  }
+
+  function nextMonth() {
+    curMonth++;
+    if (curMonth > 11) { curMonth = 0; curYear++; }
+    buildCalendar();
+  }
+
+  // ===== CONFIRMACIÓN =====
+  function fillConfirm() {
+    const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const dayName = selDate ? dayNames[selDate.getDay()] : '—';
+    const dateDisplay = selDate ? `${dayName} ${selDate.getDate()} de ${MESES[selDate.getMonth()]} ${selDate.getFullYear()}` : '—';
+    document.getElementById('cf-srv').textContent = svc || '—';
+    document.getElementById('cf-fecha').textContent = dateDisplay;
+    document.getElementById('cf-hora').textContent = selSlot || '—';
+  }
+
+  // ===== GUARDAR EN FIREBASE =====
+  async function confirmar() {
+    const nombre = document.getElementById('inp-nombre').value.trim();
+    const tel = document.getElementById('inp-tel').value.trim();
+    const auto = document.getElementById('inp-auto').value.trim();
+    const pat = document.getElementById('inp-pat').value.trim().toUpperCase();
+    const obs = document.getElementById('inp-obs').value.trim();
+
+    if (!nombre || !tel || !auto || !pat) {
+      showToast('Completá todos los campos obligatorios');
+      return;
+    }
+
+    if (!window._firebaseReady) {
+      showToast('Conectando con el servidor...');
+      return;
+    }
+
+    document.getElementById('loading').classList.add('show');
+
+    try {
+      const turnoNum = 'LB-' + String(Math.floor(Math.random() * 9000) + 1000);
+      const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+      const dateDisplay = `${dayNames[selDate.getDay()]} ${selDate.getDate()} de ${MESES[selDate.getMonth()]} ${selDate.getFullYear()}`;
+
+      const turnoData = {
+        numero: turnoNum,
+        servicio: svc,
+        duracion: svcDur,
+        fecha: selDateStr,
+        fechaDisplay: dateDisplay,
+        hora: selSlot,
+        nombre: nombre,
+        telefono: tel,
+        vehiculo: auto,
+        patente: pat,
+        observaciones: obs,
+        estado: 'pendiente',
+        creadoEn: new Date().toISOString(),
+        timestamp: window._Timestamp.now()
+      };
+
+      await window._addDoc(window._collection(window._db, 'turnos'), turnoData);
+
+      document.getElementById('loading').classList.remove('show');
+
+      // Notificar por WhatsApp al dueño
+      const msgDueno = encodeURIComponent(
+        '🔔 *NUEVO TURNO - LUBRAND*\n\n' +
+        '📋 Turno: #' + turnoNum + '\n' +
+        '👤 Cliente: ' + nombre + '\n' +
+        '📱 Tel: ' + tel + '\n' +
+        '🚗 Vehículo: ' + auto + ' | ' + pat + '\n' +
+        '🔧 Servicio: ' + svc + '\n' +
+        '📅 Fecha: ' + dateDisplay + '\n' +
+        '🕐 Hora: ' + selSlot + '\n' +
+        (obs ? '💬 Obs: ' + obs + '\n' : '') +
+        '\n✅ Confirmá el turno en tu panel:\nhttps://lubrandlubricentro.github.io/Lubrand/panel-turnos.html'
+      );
+      window.open('https://wa.me/542317533031?text=' + msgDueno, '_blank');
+
+      // Mostrar ticket
+      document.getElementById('tk-num').textContent = 'TURNO #' + turnoNum;
+      document.getElementById('tk-hora').textContent = selSlot;
+      document.getElementById('tk-fecha').textContent = dateDisplay;
+      document.getElementById('tk-nombre').textContent = nombre;
+      document.getElementById('tk-srv').textContent = svc;
+      document.getElementById('tk-auto').textContent = auto;
+      document.getElementById('tk-pat').textContent = pat;
+
+      goTo('ok');
+
+    } catch (err) {
+      document.getElementById('loading').classList.remove('show');
+      console.error(err);
+      showToast('Error al guardar. Intentá de nuevo.');
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ===== INIT =====
+  buildCalendar();
+</script>
+
+
+
+</body></html>
