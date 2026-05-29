@@ -625,7 +625,10 @@ function cambiarAnioEst(anio) {
 
 function renderStats() {
   document.getElementById('st-cli').textContent = clientes.length;
-  document.getElementById('st-tur').textContent = turnos.length + turnosFirebase.length;
+  // Contar turnos sin duplicados (misma lógica que renderTurnos)
+  var _idsEnFb = turnosFirebase.map(function(t){ return t.clienteId + '_' + t.fecha + '_' + t.hora; });
+  var _locales = turnos.filter(function(t){ return _idsEnFb.indexOf(t.clienteId + '_' + t.fecha + '_' + t.hora) === -1; });
+  document.getElementById('st-tur').textContent = _locales.length + turnosFirebase.length;
   document.getElementById('st-ser').textContent = servicios.length;
   var r = calcRec().length;
   document.getElementById('st-rec').textContent = r;
