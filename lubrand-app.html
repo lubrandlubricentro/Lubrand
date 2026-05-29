@@ -100,6 +100,36 @@ textarea{resize:vertical;min-height:70px}
 .cfg-box{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:14px;margin-bottom:12px}
 .cfg-box h3{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent);margin-bottom:10px}
 </style>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDu-Zv4AxnWyVeX0zkg7KC7QeEfPL6Yl48",
+    authDomain: "lubrand-turnos.firebaseapp.com",
+    projectId: "lubrand-turnos",
+    storageBucket: "lubrand-turnos.firebasestorage.app",
+    messagingSenderId: "195172045902",
+    appId: "1:195172045902:web:806d1448daf9f3783f5f1f"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window._db = db;
+  window._collection = collection;
+  window._getDocs = getDocs;
+  window._addDoc = addDoc;
+  window._doc = doc;
+  window._updateDoc = updateDoc;
+  window._deleteDoc = deleteDoc;
+  window._query = query;
+  window._orderBy = orderBy;
+  window._onSnapshot = onSnapshot;
+  // Escuchar cambios en tiempo real
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      if (window._db) iniciarEscuchaFirebase();
+    }, 500);
+  });
+</script>
 </head>
 <body>
 
@@ -388,6 +418,8 @@ var LS = {
 
 var clientes = LS.get('lb_clientes');
 var turnos = LS.get('lb_turnos');
+var turnosFirebase = []; // turnos online
+var fbConectado = false;
 var servicios = LS.get('lb_servicios');
 
 var SOPS = [
@@ -939,14 +971,38 @@ function saveTurno() {
   var fec = document.getElementById('tur-fec').value;
   if (!cid) { alert('Selecciona un cliente'); return; }
   if (!fec) { alert('Ingresa la fecha'); return; }
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
+  var hora = document.getElementById('tur-hor').value;
+  var obs = document.getElementById('tur-obs').value.trim();
   var t = {
     id: LS.uid(), clienteId: cid, fecha: fec,
-    hora: document.getElementById('tur-hor').value,
-    obs: document.getElementById('tur-obs').value.trim(),
+    hora: hora, obs: obs,
     creadoEn: new Date().toISOString()
   };
   turnos.push(t);
   LS.set('lb_turnos', turnos);
+  // Guardar en Firebase
+  if (window._db && window._addDoc && c) {
+    var veh = c.vehiculos && c.vehiculos.length ? c.vehiculos[0] : {marca:c.marca||'',modelo:c.modelo||'',patente:c.patente||''};
+    var num = 'LB-' + Math.floor(1000+Math.random()*9000);
+    var fechaDisplay = new Date(fec+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    window._addDoc(window._collection(window._db, 'turnos'), {
+      numero: num,
+      nombre: 'Por aplicacion',
+      clienteId: cid,
+      vehiculo: [veh.marca, veh.modelo].filter(Boolean).join(' ') || 'Por apli.',
+      patente: veh.patente || '',
+      servicio: obs || 'Servicio',
+      fecha: fec,
+      fechaDisplay: fechaDisplay,
+      hora: hora,
+      telefono: c.telefono || '',
+      estado: 'pendiente',
+      origen: 'app',
+      creadoEn: new Date().toISOString()
+    }).catch(function(e){ console.log('Firebase error:', e); });
+  }
   document.getElementById('tur-busca').value = '';
   document.getElementById('tur-cid').value = '';
   document.getElementById('tur-fec').value = hoy();
@@ -992,6 +1048,13 @@ function completarTurno(id) {
 
 function delTurno(id) {
   if (!confirm('¿Borrar este turno?')) return;
+  // Si es turno de Firebase
+  var t = null;
+  for (var i = 0; i < turnosFirebase.length; i++) { if (turnosFirebase[i].fbId === id) { t = turnosFirebase[i]; break; } }
+  if (t && window._db) {
+    window._deleteDoc(window._doc(window._db, 'turnos', id)).catch(function(e){ console.log(e); });
+    return;
+  }
   turnos = turnos.filter(function(x) { return x.id !== id; });
   LS.set('lb_turnos', turnos); renderTurnos(); renderStats();
 }
@@ -1008,35 +1071,82 @@ function waTurnoCard(tid) {
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
+function iniciarEscuchaFirebase() {
+  try {
+    var q = window._query(window._collection(window._db, 'turnos'));
+    window._onSnapshot(q, function(snap) {
+      turnosFirebase = [];
+      snap.forEach(function(d) {
+        var data = d.data();
+        if (data.estado !== 'bloqueado') {
+          turnosFirebase.push(Object.assign({}, data, {fbId: d.id}));
+        }
+      });
+      fbConectado = true;
+      renderTurnos();
+      renderStats();
+    });
+  } catch(e) { console.log('Firebase error:', e); }
+}
+
 function renderTurnos() {
   var q = (document.getElementById('q-tur').value || '').toLowerCase();
   var el = document.getElementById('tur-list');
-  var list = turnos.filter(function(t) {
-    var c = null;
-    for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === t.clienteId) { c = clientes[i]; break; } }
-    var label = (c ? c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '') : '') + ' ' + t.fecha;
-    return label.toLowerCase().indexOf(q) !== -1;
+
+  // Turnos locales que no están en Firebase
+  var idsEnFb = turnosFirebase.map(function(t){ return t.clienteId + '_' + t.fecha + '_' + t.hora; });
+  var locales = turnos.filter(function(t) {
+    var key = t.clienteId + '_' + t.fecha + '_' + t.hora;
+    return idsEnFb.indexOf(key) === -1;
   });
-  list.sort(function(a, b) { return a.fecha.localeCompare(b.fecha); });
-  if (!list.length) { el.innerHTML = '<div class="empty"><div class="ei">📅</div><p>No hay turnos</p></div>'; return; }
-  var h = '';
-  list.forEach(function(t) {
+
+  var lista = [];
+  locales.forEach(function(t) {
     var c = null;
     for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === t.clienteId) { c = clientes[i]; break; } }
-    var nom = c ? c.nombre + ' ' + (c.apellido || '') : '---';
-    var veh = c ? [c.marca, c.modelo, c.patente].filter(Boolean).join(' - ') : '';
+    lista.push({id: t.id, fbId: null, fecha: t.fecha, hora: t.hora||'', obs: t.obs||'', origen: 'app',
+      nom: c ? c.nombre+' '+(c.apellido||'') : '---',
+      veh: c ? [c.marca,c.modelo,c.patente].filter(Boolean).join(' - ') : '',
+      tel: c ? c.telefono : '', clienteId: t.clienteId, estado: 'pendiente'});
+  });
+  turnosFirebase.forEach(function(t) {
+    var c = null;
+    if (t.clienteId) { for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === t.clienteId) { c = clientes[i]; break; } } }
+    lista.push({id: t.fbId, fbId: t.fbId, fecha: t.fecha, hora: t.hora||'', obs: t.servicio||'', origen: t.origen||'online',
+      nom: c ? c.nombre+' '+(c.apellido||'') : (t.nombre||'---'),
+      veh: c ? [c.marca,c.modelo,c.patente].filter(Boolean).join(' - ') : (t.vehiculo||''),
+      tel: c ? c.telefono : (t.telefono||''), clienteId: t.clienteId||'', estado: t.estado||'pendiente'});
+  });
+
+  lista = lista.filter(function(t) {
+    return (t.nom + ' ' + t.veh + ' ' + t.fecha).toLowerCase().indexOf(q) !== -1;
+  });
+  lista.sort(function(a, b) { return a.fecha.localeCompare(b.fecha) || a.hora.localeCompare(b.hora); });
+
+  if (!lista.length) { el.innerHTML = '<div class="empty"><div class="ei">📅</div><p>No hay turnos</p></div>'; return; }
+  var h = '';
+  lista.forEach(function(t) {
+    var esOnline = t.origen === 'online';
     h += '<div class="card">';
-    h += '<div class="cn">' + nom + '</div>';
-    if (veh) h += '<div class="cs">' + veh + '</div>';
+    h += '<div style="display:flex;justify-content:space-between;align-items:flex-start">';
+    h += '<div><div class="cn">' + t.nom + (esOnline ? ' <span style="background:rgba(40,199,111,.15);color:var(--success);font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700">ONLINE</span>' : '') + '</div>';
+    if (t.veh) h += '<div class="cs">' + t.veh + '</div>';
     h += '<div class="cs">Fecha: ' + fFecha(t.fecha) + (t.hora ? ' | Hora: ' + t.hora : '') + '</div>';
     if (t.obs) h += '<div class="cs">Obs: ' + t.obs + '</div>';
+    h += '</div><span class="ctag">' + (t.estado) + '</span></div>';
     h += '<div class="ca">';
-    if (c && c.telefono) h += '<button class="btn bw" onclick="waTurnoCard(\'' + t.id + '\')">WA</button>';
-    h += '<button class="btn bsuc" onclick="completarTurno(\'' + t.id + '\')">Completar</button>';
-    h += '<button class="btn bd" onclick="delTurno(\'' + t.id + '\')">Borrar</button>';
+    if (t.tel) { var _tel=t.tel.replace(/[^0-9]/g,''); var _msg='Hola '+t.nom+', te confirmamos tu turno.\\n\\nFecha: '+fFecha(t.fecha)+(t.hora?'\\nHora: '+t.hora:'')+'\\n\\nLubrand Lubricentro\\nAgustin Alvarez 1179'; h += '<button class="btn bw" onclick="window.open(&#39;https://wa.me/'+_tel+'?text='+encodeURIComponent(_msg)+'&#39;,&#39;_blank&#39;)">WA</button>'; }
+    if (!esOnline) h += '<button class="btn bsuc" onclick="completarTurno(&#39;' + t.id + '&#39;)">Completar</button>';
+    h += '<button class="btn bd" onclick="delTurno(&#39;' + t.id + '&#39;)">Borrar</button>';
     h += '</div></div>';
   });
   el.innerHTML = h;
+}
+
+function waTurnoDirecto(tel, nom, fecha, hora) {
+  tel = (tel||'').replace(/[^0-9]/g, '');
+  var msg = 'Hola ' + nom + ', te confirmamos tu turno.\n\nFecha: ' + fFecha(fecha) + (hora ? '\nHora: ' + hora : '') + '\n\nLubrand Lubricentro\nAgustin Alvarez 1179';
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
 // ========== SERVICIOS ==========
