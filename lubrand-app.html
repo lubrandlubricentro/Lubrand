@@ -625,7 +625,7 @@ function cambiarAnioEst(anio) {
 
 function renderStats() {
   document.getElementById('st-cli').textContent = clientes.length;
-  document.getElementById('st-tur').textContent = turnos.length;
+  document.getElementById('st-tur').textContent = turnos.length + turnosFirebase.length;
   document.getElementById('st-ser').textContent = servicios.length;
   var r = calcRec().length;
   document.getElementById('st-rec').textContent = r;
