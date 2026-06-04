@@ -133,6 +133,38 @@ textarea{resize:vertical;min-height:70px}
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="position:fixed;inset:0;z-index:9999;background:#0f1117;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px">
+  <div style="font-family:'Arial Black',sans-serif;font-size:48px;color:#ff2222;letter-spacing:2px;margin-bottom:4px">LUBRAND</div>
+  <div style="font-size:12px;color:#7a7f9a;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:40px">Panel de Control</div>
+  <div style="width:100%;max-width:320px">
+    <label style="display:block;font-size:11px;font-weight:700;color:#7a7f9a;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase">Contraseña</label>
+    <input id="login-pass" type="password" placeholder="Ingresá tu contraseña" onkeydown="if(event.key==='Enter')checkPass()" style="width:100%;background:#1a1d27;border:1px solid rgba(255,255,255,.15);color:#eef0f8;font-size:16px;font-weight:600;border-radius:12px;padding:13px 16px;outline:none;margin-bottom:10px;box-sizing:border-box">
+    <div id="login-err" style="display:none;color:#ea5455;font-size:12px;font-weight:700;margin-bottom:10px;text-align:center">❌ Contraseña incorrecta</div>
+    <button onclick="checkPass()" style="width:100%;background:linear-gradient(135deg,#0a3a8e,#1565c0);border:none;color:#fff;font-size:16px;font-weight:800;border-radius:12px;padding:14px;cursor:pointer">Ingresar</button>
+  </div>
+</div>
+<script>
+function checkPass() {
+  var p = document.getElementById('login-pass').value;
+  if (p === '1979') {
+    document.getElementById('login-screen').style.display = 'none';
+    sessionStorage.setItem('lubrand-auth', '1');
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+window.addEventListener('DOMContentLoaded', function() {
+  if (sessionStorage.getItem('lubrand-auth') === '1') {
+    document.getElementById('login-screen').style.display = 'none';
+  } else {
+    setTimeout(function() { document.getElementById('login-pass').focus(); }, 300);
+  }
+});
+</script>
+
 <div class="hdr">
   <div><small style="color:#ff4444">Panel de Control</small><h1 style="color:#ff2222">LUBRAND</h1></div>
   <div style="display:flex;gap:8px;align-items:center">
@@ -181,9 +213,45 @@ textarea{resize:vertical;min-height:70px}
 </div>
 
 <div id="v-turnos" class="view">
-  <div class="stitle">📅 Turnos</div>
-  <div class="sbar"><input id="q-tur" type="text" placeholder="Buscar turno..." oninput="renderTurnos()"></div>
-  <div id="tur-list"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div class="stitle" style="margin-bottom:0">📅 Turnos</div>
+    <div style="display:flex;gap:6px">
+      <button id="btn-vista-lista" onclick="cambiarVistaTurnos('lista')" style="padding:6px 12px;border-radius:10px;border:2px solid var(--accent);background:rgba(21,101,192,.2);color:var(--accent);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">Lista</button>
+      <button id="btn-vista-semanal" onclick="cambiarVistaTurnos('semanal')" style="padding:6px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">Semanal</button>
+    </div>
+  </div>
+
+  <div id="tur-vista-lista">
+    <div class="sbar"><input id="q-tur" type="text" placeholder="Buscar turno..." oninput="renderTurnos()"></div>
+    <div id="tur-list"></div>
+  </div>
+
+  <div id="tur-vista-semanal" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--muted)" id="sem-label"></div>
+      <div style="display:flex;gap:6px">
+        <button onclick="semAnterior()" style="padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;cursor:pointer;touch-action:manipulation">← Ant.</button>
+        <button onclick="semHoy()" style="padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;cursor:pointer;touch-action:manipulation">Hoy</button>
+        <button onclick="semSiguiente()" style="padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;cursor:pointer;touch-action:manipulation">Sig. →</button>
+      </div>
+    </div>
+    <div id="sem-grid"></div>
+    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:12px;height:12px;border-radius:3px;background:#1a3a1a;border:1px solid #28c76f"></div>Libre</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:12px;height:12px;border-radius:3px;background:#3a1a1a;border:1px solid #ea5455"></div>Ocupado</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:12px;height:12px;border-radius:3px;background:#2a2a2a;border:1px solid #555"></div>Bloqueado</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE TURNO SEMANAL -->
+<div class="mo" id="m-det-turno">
+<div class="modal">
+  <div class="mtitle">📅 Detalle del Turno
+    <button class="mclose" onclick="closeM('m-det-turno')">X</button>
+  </div>
+  <div id="det-turno-content"></div>
+</div>
 </div>
 
 <div id="v-servicios" class="view">
@@ -853,7 +921,7 @@ function waContacto(id) {
   for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === id) { c = clientes[i]; break; } }
   if (!c || !c.telefono) return;
   var tel = c.telefono.replace(/[^0-9]/g, '');
-  window.open('https://wa.me/' + tel, '_blank');
+    if (t.telefono) { var tel2 = t.telefono.replace(/[^0-9]/g,''); h += '<button onclick="window.open(&#39;https://wa.me/'+tel2+'&#39;,&#39;_blank&#39;)" class="bfull w" style="margin-top:0">WhatsApp</button>'; }
 }
 
 function preCli(tipo, cid) {
@@ -969,6 +1037,8 @@ function showTurInfo(c) {
   document.getElementById('tur-cinfo').style.display = 'block';
 }
 
+var SLOTS_APP = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
+
 function saveTurno() {
   var cid = document.getElementById('tur-cid').value;
   var fec = document.getElementById('tur-fec').value;
@@ -978,6 +1048,18 @@ function saveTurno() {
   for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
   var hora = document.getElementById('tur-hor').value;
   var obs = document.getElementById('tur-obs').value.trim();
+
+  // Verificar si el horario ya está ocupado en Firebase
+  if (hora && window._db) {
+    var ocupado = turnosFirebase.some(function(t) {
+      return t.fecha === fec && t.hora === hora && t.estado !== 'cancelado';
+    });
+    if (ocupado) {
+      alert('⚠️ Ese horario ya está ocupado. Elegí otro.');
+      return;
+    }
+  }
+
   var t = {
     id: LS.uid(), clienteId: cid, fecha: fec,
     hora: hora, obs: obs,
@@ -985,7 +1067,8 @@ function saveTurno() {
   };
   turnos.push(t);
   LS.set('lb_turnos', turnos);
-  // Guardar en Firebase
+
+  // Guardar en Firebase y bloquear el siguiente turno
   if (window._db && window._addDoc && c) {
     var veh = c.vehiculos && c.vehiculos.length ? c.vehiculos[0] : {marca:c.marca||'',modelo:c.modelo||'',patente:c.patente||''};
     var num = 'LB-' + Math.floor(1000+Math.random()*9000);
@@ -1004,8 +1087,28 @@ function saveTurno() {
       estado: 'pendiente',
       origen: 'app',
       creadoEn: new Date().toISOString()
+    }).then(function() {
+      // Bloquear el turno siguiente automáticamente
+      if (hora) {
+        var idx = SLOTS_APP.indexOf(hora);
+        if (idx !== -1 && idx < SLOTS_APP.length - 1) {
+          var slotSig = SLOTS_APP[idx + 1];
+          window._addDoc(window._collection(window._db, 'turnos'), {
+            numero: 'BLOQUEADO',
+            nombre: 'BLOQUEADO',
+            servicio: 'Bloqueado automático',
+            fecha: fec,
+            fechaDisplay: fechaDisplay,
+            hora: slotSig,
+            estado: 'bloqueado',
+            bloqueado: true,
+            creadoEn: new Date().toISOString()
+          }).catch(function(e){ console.log('Firebase bloqueo error:', e); });
+        }
+      }
     }).catch(function(e){ console.log('Firebase error:', e); });
   }
+
   document.getElementById('tur-busca').value = '';
   document.getElementById('tur-cid').value = '';
   document.getElementById('tur-fec').value = hoy();
@@ -1562,6 +1665,154 @@ function renderCuentas() {
     h += '</div></div>';
   });
   el.innerHTML = h;
+}
+
+
+// ========== VISTA SEMANAL TURNOS ==========
+var vistaTurnos = 'lista';
+var semOffset = 0;
+var DIAS_SEM = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+var SLOTS_SEM = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
+
+function cambiarVistaTurnos(v) {
+  vistaTurnos = v;
+  var btnL = document.getElementById('btn-vista-lista');
+  var btnS = document.getElementById('btn-vista-semanal');
+  var vL = document.getElementById('tur-vista-lista');
+  var vS = document.getElementById('tur-vista-semanal');
+  if (v === 'lista') {
+    vL.style.display = 'block'; vS.style.display = 'none';
+    btnL.style.borderWidth = '2px'; btnL.style.background = 'rgba(21,101,192,.2)'; btnL.style.color = 'var(--accent)';
+    btnS.style.borderWidth = '1px'; btnS.style.background = 'transparent'; btnS.style.color = 'var(--muted)';
+  } else {
+    vL.style.display = 'none'; vS.style.display = 'block';
+    btnS.style.borderWidth = '2px'; btnS.style.background = 'rgba(21,101,192,.2)'; btnS.style.color = 'var(--accent)';
+    btnL.style.borderWidth = '1px'; btnL.style.background = 'transparent'; btnL.style.color = 'var(--muted)';
+    renderSemanal();
+  }
+}
+
+function getLunes(offset) {
+  var hoy = new Date();
+  var dia = hoy.getDay();
+  var diff = (dia === 0 ? -6 : 1 - dia);
+  var lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diff + offset * 7);
+  lunes.setHours(0,0,0,0);
+  return lunes;
+}
+
+function fmtFecha(d) { return d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear(); }
+function fmtFechaISO(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+
+function semAnterior() { semOffset--; renderSemanal(); }
+function semSiguiente() { semOffset++; renderSemanal(); }
+function semHoy() { semOffset = 0; renderSemanal(); }
+
+function renderSemanal() {
+  var lunes = getLunes(semOffset);
+  var dias = [];
+  for (var i = 0; i < 6; i++) {
+    var d = new Date(lunes); d.setDate(lunes.getDate() + i);
+    dias.push(d);
+  }
+  var sabado = new Date(lunes); sabado.setDate(lunes.getDate() + 5);
+
+  var label = document.getElementById('sem-label');
+  if (label) label.textContent = fmtFecha(lunes) + ' — ' + fmtFecha(sabado);
+
+  // Armar mapa de turnos por fecha+hora
+  var todosT = [];
+  turnosFirebase.forEach(function(t) { todosT.push({fecha:t.fecha, hora:t.hora||'', bloqueado:t.bloqueado||false, estado:t.estado||'pendiente', nombre:t.nombre||'', vehiculo:t.vehiculo||'', patente:t.patente||'', servicio:t.servicio||'', telefono:t.telefono||'', fbId:t.fbId, origen:t.origen||'online'}); });
+  turnos.forEach(function(t) {
+    var c = null;
+    for (var i=0;i<clientes.length;i++){if(clientes[i].id===t.clienteId){c=clientes[i];break;}}
+    var veh = c ? ([c.marca,c.modelo].filter(Boolean).join(' ')||'') : '';
+    var vobj = c && c.vehiculos && c.vehiculos.length ? c.vehiculos[0] : null;
+    todosT.push({fecha:t.fecha, hora:t.hora||'', bloqueado:false, estado:'pendiente', nombre:c?(c.apellido||c.nombre):'---', vehiculo:vobj?([vobj.marca,vobj.modelo].filter(Boolean).join(' ')):veh, patente:vobj?(vobj.patente||''):(c?c.patente||'':''), servicio:t.obs||'', telefono:c?c.telefono||'':'', fbId:null, origen:'app', localId:t.id});
+  });
+
+  var hoyISO = fmtFechaISO(new Date());
+  var grid = document.getElementById('sem-grid');
+  if (!grid) return;
+
+  var h = '<div style="display:grid;grid-template-columns:44px repeat(6,1fr);gap:3px;font-size:11px">';
+  // Headers días
+  h += '<div></div>';
+  dias.forEach(function(d) {
+    var iso = fmtFechaISO(d);
+    var esHoy = iso === hoyISO;
+    h += '<div style="text-align:center;padding:5px 2px;border-radius:8px;' + (esHoy?'background:rgba(21,101,192,.25);color:var(--accent);font-weight:700':'color:var(--muted)') + '">' + DIAS_SEM[d.getDay()] + '<br><span style="font-size:14px;font-weight:500">' + d.getDate() + '</span></div>';
+  });
+
+  // Mañana
+  h += '<div style="grid-column:1/-1;font-size:10px;color:var(--muted);padding:6px 0 2px;border-top:1px solid rgba(255,255,255,.07);margin-top:3px;text-transform:uppercase;letter-spacing:.5px">Mañana</div>';
+  var mSlots = SLOTS_SEM.filter(function(s){ return s < '12:00'; });
+  mSlots.forEach(function(slot) {
+    h += '<div style="font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:4px">' + slot + '</div>';
+    dias.forEach(function(d) {
+      var iso = fmtFechaISO(d);
+      var t = null;
+      for (var i=0;i<todosT.length;i++){if(todosT[i].fecha===iso&&todosT[i].hora===slot){t=todosT[i];break;}}
+      h += renderSlotCell(t, slot, iso);
+    });
+  });
+
+  // Tarde
+  h += '<div style="grid-column:1/-1;font-size:10px;color:var(--muted);padding:6px 0 2px;border-top:1px solid rgba(255,255,255,.07);margin-top:3px;text-transform:uppercase;letter-spacing:.5px">Tarde</div>';
+  var tSlots = SLOTS_SEM.filter(function(s){ return s >= '14:00'; });
+  tSlots.forEach(function(slot) {
+    h += '<div style="font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:4px">' + slot + '</div>';
+    dias.forEach(function(d) {
+      var iso = fmtFechaISO(d);
+      var t = null;
+      for (var i=0;i<todosT.length;i++){if(todosT[i].fecha===iso&&todosT[i].hora===slot){t=todosT[i];break;}}
+      h += renderSlotCell(t, slot, iso);
+    });
+  });
+
+  h += '</div>';
+  grid.innerHTML = h;
+}
+
+function renderSlotCell(t, slot, fecha) {
+  if (!t) {
+    return '<div style="text-align:center;padding:4px 2px;border-radius:6px;border:1px solid rgba(40,199,111,.2);background:rgba(40,199,111,.05);min-height:38px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(40,199,111,.5)">Libre</div>';
+  }
+  if (t.bloqueado) {
+    return '<div style="text-align:center;padding:4px 2px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);min-height:38px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">Bloq.</div>';
+  }
+  var enc = encodeURIComponent(JSON.stringify({fecha:fecha,hora:slot,nombre:t.nombre,vehiculo:t.vehiculo,patente:t.patente,servicio:t.servicio,telefono:t.telefono,estado:t.estado,fbId:t.fbId,localId:t.localId||''}));
+  return '<div onclick="verDetalleSem('+enc.replace(/'/g,"&#39;")+')" style="text-align:center;padding:4px 2px;border-radius:6px;border:1px solid rgba(234,84,85,.3);background:rgba(234,84,85,.12);min-height:38px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;cursor:pointer"><span style="font-size:10px;font-weight:700;color:#ea5455;line-height:1.2">' + (t.nombre||'---') + '</span><span style="font-size:9px;color:rgba(234,84,85,.7)">' + (t.vehiculo||'') + '</span></div>';
+}
+
+function verDetalleSem(enc) {
+  var t;
+  try { t = JSON.parse(decodeURIComponent(enc)); } catch(e) { return; }
+  var h = '';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
+  h += '<div style="font-size:24px;font-weight:800;color:var(--accent)">' + t.hora + '</div>';
+  h += '<span style="background:rgba(21,101,192,.2);color:var(--accent);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700">' + (t.estado||'pendiente') + '</span>';
+  h += '</div>';
+  h += '<div class="card" style="margin-bottom:10px">';
+  h += '<div style="font-weight:800;font-size:15px;margin-bottom:4px">' + (t.nombre||'---') + '</div>';
+  h += '<div style="font-size:12px;color:var(--muted)">' + (t.vehiculo||'---') + (t.patente?' — '+t.patente:'') + '</div>';
+  h += '</div>';
+  h += '<div class="card" style="margin-bottom:10px">';
+  h += '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;font-weight:700;letter-spacing:.5px">Servicio</div>';
+  h += '<div style="font-size:13px">' + (t.servicio||'Sin descripción') + '</div>';
+  h += '</div>';
+  if (t.telefono) {
+    var tel = t.telefono.replace(/[^0-9]/g,'');
+    if (t.telefono) { var _wat = t.telefono.replace(/[^0-9]/g,''); h += '<button onclick="window.open(&#39;https://wa.me/'+_wat+'&#39;,&#39;_blank&#39;)" class="bfull w" style="margin-top:0">WhatsApp</button>'; }
+  }
+  if (t.fbId) {
+    if (t.fbId) { h += '<button onclick="delTurno(&#39;'+t.fbId+'&#39;);closeM(&#39;m-det-turno&#39;)" class="bfull" style="background:rgba(234,84,85,.15);color:var(--danger);border:1px solid rgba(234,84,85,.3);margin-top:8px">Borrar turno</button>'; }
+  } else if (t.localId) {
+    if (!t.fbId && t.localId) { h += '<button onclick="delTurno(&#39;'+t.localId+'&#39;);closeM(&#39;m-det-turno&#39;)" class="bfull" style="background:rgba(234,84,85,.15);color:var(--danger);border:1px solid rgba(234,84,85,.3);margin-top:8px">Borrar turno</button>'; }
+  }
+  document.getElementById('det-turno-content').innerHTML = h;
+  openM('m-det-turno', false);
 }
 
 // ========== INIT ==========
