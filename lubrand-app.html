@@ -123,7 +123,6 @@ textarea{resize:vertical;min-height:70px}
   window._query = query;
   window._orderBy = orderBy;
   window._onSnapshot = onSnapshot;
-  // Escuchar cambios en tiempo real
   window.addEventListener('load', function() {
     setTimeout(function() {
       if (window._db) iniciarEscuchaFirebase();
@@ -271,7 +270,6 @@ window.addEventListener('DOMContentLoaded', function() {
 <div id="v-config" class="view">
   <div class="stitle">⚙️ Configuracion</div>
 
-  <!-- INSTALAR APP -->
   <div class="cfg-box">
     <h3>📲 Instalar como App</h3>
     <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Agregá Lubrand a tu pantalla de inicio para abrirla como una app sin necesidad de navegar.</p>
@@ -285,14 +283,12 @@ window.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
-  <!-- EXPORTAR DATOS -->
   <div class="cfg-box">
     <h3>💾 Exportar Datos</h3>
     <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Guardá una copia de seguridad de todos tus clientes, servicios, turnos y cuentas.</p>
     <button class="bfull exp" onclick="exportarDatos()">⬇️ Exportar copia de seguridad</button>
   </div>
 
-  <!-- IMPORTAR DATOS -->
   <div class="cfg-box">
     <h3>📂 Importar Datos</h3>
     <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Restaurá una copia de seguridad previamente exportada. <b style="color:var(--danger)">Reemplaza los datos actuales.</b></p>
@@ -301,7 +297,6 @@ window.addEventListener('DOMContentLoaded', function() {
     <div id="imp-msg" style="display:none;margin-top:8px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700"></div>
   </div>
 
-  <!-- INFO -->
   <div class="cfg-box">
     <h3>ℹ️ Info</h3>
     <div style="font-size:12px;color:var(--muted);line-height:1.8">
@@ -384,11 +379,12 @@ window.addEventListener('DOMContentLoaded', function() {
     <div id="ser-veh-selector"></div>
   </div>
   <label>Fecha del Servicio</label><input id="ser-fec" type="date">
-  <label>Kilometraje</label><input id="ser-km" type="number" placeholder="90000">
+  <label>Kilometraje</label><input id="ser-km" type="number" placeholder="90000" oninput="calcProxServ()">
+  <label>Próximo Servicio (KM)</label><input id="ser-prox" type="number" placeholder="Se calcula automático" readonly style="opacity:.6;cursor:not-allowed">
   <label>Servicios (selecciona todos los que aplican)</label>
   <div class="tgrid" id="ser-togs"></div>
   <label>Observaciones</label><textarea id="ser-obs" placeholder="Detalle, repuestos, proximo service..."></textarea>
-  <label>Total Servicio ($)</label><input id="ser-total-manual" type="number" placeholder="Ej: 15000" oninput="document.getElementById('ser-tot').textContent=Number(this.value||0).toLocaleString('es-AR')">
+  <label>Total Servicio ($) — Solo uso interno</label><input id="ser-total-manual" type="number" placeholder="Ej: 15000" oninput="document.getElementById('ser-tot').textContent=Number(this.value||0).toLocaleString('es-AR')">
   <div id="ser-items" style="display:none"></div>
   <div class="div"></div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -456,7 +452,6 @@ window.addEventListener('appinstalled', function() {
   document.getElementById('pwa-banner').classList.remove('on');
 });
 
-// Crear manifest dinámico para PWA
 (function() {
   var manifest = {
     name: 'Lubrand Lubricentro',
@@ -486,7 +481,7 @@ var LS = {
 
 var clientes = LS.get('lb_clientes');
 var turnos = LS.get('lb_turnos');
-var turnosFirebase = []; // turnos online
+var turnosFirebase = [];
 var fbConectado = false;
 var servicios = LS.get('lb_servicios');
 
@@ -555,8 +550,6 @@ function renderAll() {
 
 // ========== ESTADÍSTICAS POR MES ==========
 var estVisible = true;
-
-var estVisible = true;
 var estPanelAbierto = false;
 var estMesAbierto = null;
 
@@ -607,7 +600,6 @@ function renderEstadisticas() {
   var totalAnio = 0; var cantAnio = 0;
   for (var m2 = 0; m2 < 12; m2++) { totalAnio += datos[m2].total; cantAnio += datos[m2].cant; }
 
-  // Botón ocultar/mostrar + selector años
   var h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
   h += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
   listaAnios.forEach(function(a) {
@@ -618,7 +610,6 @@ function renderEstadisticas() {
   h += '<button onclick="toggleEst()" style="background:rgba(255,255,255,.1);border:none;color:var(--text);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">'+(estVisible?'🙈 Ocultar':'👁 Visible')+'</button>';
   h += '</div>';
 
-  // Resumen anual
   h += '<div class="card" style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">';
   h += '<div><div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Total '+anioSel+'</div>';
   h += '<div style="font-size:22px;font-weight:800;color:var(--accent)">'+(estVisible?'$'+totalAnio.toLocaleString('es-AR'):'••••••')+'</div></div>';
@@ -626,14 +617,12 @@ function renderEstadisticas() {
   h += '<div style="font-size:22px;font-weight:800">'+(estVisible?cantAnio:'••')+'</div></div>';
   h += '</div>';
 
-  // Meses — tocando cada uno despliega el detalle
   for (var m3 = 11; m3 >= 0; m3--) {
     var d = datos[m3];
     if (!d.cant) continue;
     var pct = totalAnio > 0 ? Math.round(d.total/totalAnio*100) : 0;
     var abierto = estMesAbierto === (anioSel+'-'+m3);
     h += '<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden">';
-    // Cabecera del mes — toca para abrir
     h += '<div onclick="toggleMes(&#39;' + anioSel + '&#39;,' + m3 + ')" style="padding:11px 13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;touch-action:manipulation">';
     h += '<div><div style="font-weight:800;font-size:14px">'+meses[m3]+'</div>';
     if (estVisible) h += '<div style="font-size:11px;color:var(--muted)">'+ d.cant +' servicio'+(d.cant!==1?'s':'')+'</div>';
@@ -642,12 +631,10 @@ function renderEstadisticas() {
     h += '<div style="font-size:15px;color:var(--accent);font-weight:800">'+(estVisible?'$'+d.total.toLocaleString('es-AR'):'••••')+'</div>';
     h += '<span style="color:var(--accent);font-size:14px">'+(abierto?'▲':'▼')+'</span>';
     h += '</div></div>';
-    // Barra progreso
     if (estVisible) {
       h += '<div style="margin:0 13px 8px;background:rgba(255,255,255,.07);border-radius:6px;height:4px;overflow:hidden">';
       h += '<div style="width:'+pct+'%;height:100%;background:var(--accent);border-radius:6px"></div></div>';
     }
-    // Detalle servicios del mes (si está abierto)
     if (abierto) {
       h += '<div style="border-top:1px solid rgba(255,255,255,.07);padding:10px 13px">';
       d.items.sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
@@ -693,14 +680,12 @@ function cambiarAnioEst(anio) {
 
 function renderStats() {
   document.getElementById('st-cli').textContent = clientes.length;
-  // Contar turnos sin duplicados (misma lógica que renderTurnos)
   var _idsEnFb = turnosFirebase.map(function(t){ return t.clienteId + '_' + t.fecha + '_' + t.hora; });
   var _locales = turnos.filter(function(t){ return _idsEnFb.indexOf(t.clienteId + '_' + t.fecha + '_' + t.hora) === -1; });
   document.getElementById('st-tur').textContent = _locales.length + turnosFirebase.length;
   document.getElementById('st-ser').textContent = servicios.length;
   var r = calcRec().length;
   document.getElementById('st-rec').textContent = r;
-  // Cuentas corrientes: siempre oculto en inicio
   document.getElementById('st-cc').textContent = '••••';
   var b = document.querySelector('#nb-home .bdg');
   if (r > 0) {
@@ -778,7 +763,6 @@ function importarDatos(input) {
 }
 
 // ========== CLIENTES ==========
-// ========== MULTI-VEHÍCULO ==========
 var cliVehiculos = [{marca:'',modelo:'',anio:'',patente:'',km:''}];
 
 function renderVehLista() {
@@ -830,10 +814,8 @@ function resetCliForm() {
 function saveCli() {
   var nom = document.getElementById('cli-nom').value.trim();
   if (!nom) { alert('Ingresa el nombre'); return; }
-  // Limpiar vehículos vacíos pero conservar al menos los que tengan patente o marca
   var vehs = cliVehiculos.filter(function(v){ return v.marca||v.modelo||v.patente; });
   if (!vehs.length) vehs = [];
-  // compatibilidad: primer vehículo como campos raíz
   var v0 = vehs[0] || {};
   var obj = {
     nombre: nom,
@@ -863,7 +845,6 @@ function editCli(id) {
   document.getElementById('cli-ape').value = c.apellido || '';
   document.getElementById('cli-tel').value = c.telefono || '';
   document.getElementById('cli-cuit').value = c.cuit || '';
-  // Cargar vehículos: si tiene array usar ese, sino construir desde campos raíz
   if (c.vehiculos && c.vehiculos.length) {
     cliVehiculos = c.vehiculos.map(function(v){ return {marca:v.marca||'',modelo:v.modelo||'',anio:v.anio||'',patente:v.patente||'',km:v.km||''}; });
   } else {
@@ -921,7 +902,7 @@ function waContacto(id) {
   for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === id) { c = clientes[i]; break; } }
   if (!c || !c.telefono) return;
   var tel = c.telefono.replace(/[^0-9]/g, '');
-    if (t.telefono) { var tel2 = t.telefono.replace(/[^0-9]/g,''); h += '<button onclick="window.open(&#39;https://wa.me/'+tel2+'&#39;,&#39;_blank&#39;)" class="bfull w" style="margin-top:0">WhatsApp</button>'; }
+  window.open('https://wa.me/' + tel, '_blank');
 }
 
 function preCli(tipo, cid) {
@@ -1049,7 +1030,6 @@ function saveTurno() {
   var hora = document.getElementById('tur-hor').value;
   var obs = document.getElementById('tur-obs').value.trim();
 
-  // Verificar si el horario ya está ocupado en Firebase
   if (hora && window._db) {
     var ocupado = turnosFirebase.some(function(t) {
       return t.fecha === fec && t.hora === hora && t.estado !== 'cancelado';
@@ -1068,7 +1048,6 @@ function saveTurno() {
   turnos.push(t);
   LS.set('lb_turnos', turnos);
 
-  // Guardar en Firebase y bloquear el siguiente turno
   if (window._db && window._addDoc && c) {
     var veh = c.vehiculos && c.vehiculos.length ? c.vehiculos[0] : {marca:c.marca||'',modelo:c.modelo||'',patente:c.patente||''};
     var num = 'LB-' + Math.floor(1000+Math.random()*9000);
@@ -1088,7 +1067,6 @@ function saveTurno() {
       origen: 'app',
       creadoEn: new Date().toISOString()
     }).then(function() {
-      // Bloquear el turno siguiente automáticamente
       if (hora) {
         var idx = SLOTS_APP.indexOf(hora);
         if (idx !== -1 && idx < SLOTS_APP.length - 1) {
@@ -1133,9 +1111,18 @@ function waTurno() {
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
+// ========== CAMBIO 1: completarTurno mejorado ==========
 function completarTurno(id) {
-  var cid = ''; var fec = '';
-  for (var i = 0; i < turnos.length; i++) { if (turnos[i].id === id) { cid = turnos[i].clienteId; fec = turnos[i].fecha; break; } }
+  var cid = ''; var fec = ''; var obs = ''; var hora = '';
+  for (var i = 0; i < turnos.length; i++) {
+    if (turnos[i].id === id) {
+      cid = turnos[i].clienteId;
+      fec = turnos[i].fecha;
+      obs = turnos[i].obs || '';
+      hora = turnos[i].hora || '';
+      break;
+    }
+  }
   turnos = turnos.filter(function(x) { return x.id !== id; });
   LS.set('lb_turnos', turnos);
   var c = null;
@@ -1144,17 +1131,30 @@ function completarTurno(id) {
   setTimeout(function() {
     openM('m-ser', false);
     if (c) {
-      document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '');
+      // Nombre del cliente
+      document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
       document.getElementById('ser-cid').value = c.id;
       showSerInfo(c);
+      // Kilometraje del vehículo y cálculo próximo service
+      var km = '';
+      if (c.vehiculos && c.vehiculos.length) {
+        km = c.vehiculos[0].km || '';
+      } else {
+        km = c.km || '';
+      }
+      if (km) {
+        document.getElementById('ser-km').value = km;
+        calcProxServ();
+      }
     }
+    // Fecha y observaciones del turno
     document.getElementById('ser-fec').value = fec || hoy();
+    document.getElementById('ser-obs').value = obs;
   }, 150);
 }
 
 function delTurno(id) {
   if (!confirm('¿Borrar este turno?')) return;
-  // Si es turno de Firebase
   var t = null;
   for (var i = 0; i < turnosFirebase.length; i++) { if (turnosFirebase[i].fbId === id) { t = turnosFirebase[i]; break; } }
   if (t && window._db) {
@@ -1199,7 +1199,6 @@ function renderTurnos() {
   var q = (document.getElementById('q-tur').value || '').toLowerCase();
   var el = document.getElementById('tur-list');
 
-  // Turnos locales que no están en Firebase
   var idsEnFb = turnosFirebase.map(function(t){ return t.clienteId + '_' + t.fecha + '_' + t.hora; });
   var locales = turnos.filter(function(t) {
     var key = t.clienteId + '_' + t.fecha + '_' + t.hora;
@@ -1256,6 +1255,14 @@ function waTurnoDirecto(tel, nom, fecha, hora) {
 }
 
 // ========== SERVICIOS ==========
+
+// ========== CAMBIO 2: calcProxServ ==========
+function calcProxServ() {
+  var km = parseInt(document.getElementById('ser-km').value || '0');
+  var prox = document.getElementById('ser-prox');
+  if (prox) prox.value = km > 0 ? km + 10000 : '';
+}
+
 function initTogs() {
   var wrap = document.getElementById('ser-togs');
   var h = '';
@@ -1276,6 +1283,7 @@ function resetTogs() {
   SOPS.forEach(function(op) { var b = document.getElementById('tg-' + op.k); if (b) b.classList.remove('on'); });
   var tm = document.getElementById('ser-total-manual'); if (tm) tm.value = '';
   document.getElementById('ser-tot').textContent = '0';
+  var prox = document.getElementById('ser-prox'); if (prox) prox.value = '';
 }
 
 function getTipo() {
@@ -1315,19 +1323,17 @@ function selSerCli(id) {
 function showSerInfo(c) {
   document.getElementById('ser-cnom').textContent = c.nombre + ' ' + (c.apellido || '');
   document.getElementById('ser-cinfo').style.display = 'block';
-  // Armar lista de vehículos
   var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : (c.marca||c.patente ? [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}] : []);
   var sel = document.getElementById('ser-veh-selector');
   if (!vehs.length) { sel.innerHTML = '<div style="font-size:12px;color:var(--muted)">Sin vehículos cargados</div>'; return; }
-  // Si tiene uno solo lo selecciona directo
   if (vehs.length === 1) {
     document.getElementById('ser-vid').value = '0';
     var v = vehs[0];
     sel.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'') + '</div>';
     if (v.km) document.getElementById('ser-km').value = v.km;
+    calcProxServ();
     return;
   }
-  // Varios vehículos: mostrar botones para elegir
   var h = '<div style="font-size:11px;color:var(--muted);font-weight:700;margin:6px 0 4px;text-transform:uppercase;letter-spacing:.5px">Elegí el vehículo:</div>';
   vehs.forEach(function(v, i) {
     var label = [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'');
@@ -1343,16 +1349,17 @@ function selSerVeh(idx) {
   for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
   if (!c) return;
   var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}];
-  // Resaltar botón seleccionado
   vehs.forEach(function(_, i) {
     var btn = document.getElementById('ser-vbtn-'+i);
     if (btn) btn.style.borderColor = i===idx ? 'var(--accent)' : 'rgba(255,255,255,.1)';
     if (btn) btn.style.background = i===idx ? 'rgba(21,101,192,.2)' : 'rgba(255,255,255,.06)';
   });
   document.getElementById('ser-vid').value = idx;
-  // Prellenar KM del vehículo elegido
   var v = vehs[idx];
-  if (v && v.km) document.getElementById('ser-km').value = v.km;
+  if (v && v.km) {
+    document.getElementById('ser-km').value = v.km;
+    calcProxServ();
+  }
 }
 
 function saveServicio() {
@@ -1368,10 +1375,12 @@ function saveServicio() {
   SOPS.forEach(function(op) { if (selTogs[op.k]) sopsSeleccionados.push(op.l); });
   var vidx = document.getElementById('ser-vid').value;
   var kmVal = document.getElementById('ser-km').value.trim();
+  var proxVal = document.getElementById('ser-prox').value.trim();
   var s = {
     id: LS.uid(), clienteId: cid, fecha: fec,
     vehiculoIdx: vidx !== '' ? parseInt(vidx) : 0,
     km: kmVal,
+    proxKm: proxVal,
     tipo: tipo,
     sops: sopsSeleccionados,
     detalle: document.getElementById('ser-obs').value.trim(),
@@ -1381,7 +1390,6 @@ function saveServicio() {
     creadoEn: new Date().toISOString()
   };
   servicios.push(s);
-  // Actualizar km del vehículo correcto
   for (var i = 0; i < clientes.length; i++) {
     if (clientes[i].id === cid && kmVal) {
       var vi = s.vehiculoIdx || 0;
@@ -1405,6 +1413,7 @@ function resetSerForm() {
   document.getElementById('ser-vid').value = '';
   document.getElementById('ser-fec').value = hoy();
   document.getElementById('ser-km').value = '';
+  document.getElementById('ser-prox').value = '';
   document.getElementById('ser-obs').value = '';
   document.getElementById('ser-cinfo').style.display = 'none';
   document.getElementById('ser-veh-selector').innerHTML = '';
@@ -1427,6 +1436,7 @@ function verRemito(id) {
   var nom = c ? c.nombre + ' ' + (c.apellido || '') : '---';
   var veh = c ? [c.marca, c.modelo, c.anio].filter(Boolean).join(' ') + (c.patente ? ' - ' + c.patente : '') : '---';
   var km = s.km ? Number(s.km).toLocaleString() : '---';
+  var proxKm = s.proxKm ? Number(s.proxKm).toLocaleString() : '---';
   var filas = '';
   var listaServ = s.sops && s.sops.length ? s.sops : (s.tipo ? s.tipo.split(', ') : []);
   listaServ.forEach(function(sv) { if (sv) filas += '<tr><td>' + sv + '</td><td style="text-align:center">1</td></tr>'; });
@@ -1437,10 +1447,11 @@ function verRemito(id) {
   h += '<div style="font-size:11px;color:#555;margin-bottom:12px">Fecha: ' + fFecha(s.fecha) + ' | N: ' + s.id.slice(-6).toUpperCase() + '</div>';
   h += '<div style="font-size:13px;margin-bottom:4px"><b>Cliente:</b> ' + nom + '</div>';
   h += '<div style="font-size:13px;margin-bottom:4px"><b>Vehiculo:</b> ' + veh + '</div>';
-  h += '<div style="font-size:13px;margin-bottom:12px"><b>KM actuales:</b> ' + km + '</div>';
+  h += '<div style="font-size:13px;margin-bottom:4px"><b>KM actuales:</b> ' + km + '</div>';
+  h += '<div style="font-size:13px;margin-bottom:12px"><b>Próximo service:</b> ' + proxKm + ' km</div>';
   h += '<table><thead><tr><th>Descripcion</th><th>Cant</th></tr></thead><tbody>' + filas + '</tbody></table>';
   if (s.detalle) h += '<div style="font-size:12px;color:#555;margin-top:8px;font-style:italic">' + s.detalle + '</div>';
-  h += '<div class="rtotal" style="margin-top:14px">TOTAL: $' + Number(s.total || 0).toLocaleString('es-AR') + '</div>';
+  h += '<div style="margin-top:12px;font-size:13px;font-weight:800;color:#1565c0">TOTAL: $' + Number(s.total || 0).toLocaleString('es-AR') + '</div>';
   h += '<div style="margin-top:12px;font-size:11px;color:#888">Lubrand Lubricentro - Agustin Alvarez 1179</div>';
   h += '</div>';
   document.getElementById('rem-content').innerHTML = h;
@@ -1448,22 +1459,23 @@ function verRemito(id) {
   openM('m-rem', false);
 }
 
+// ========== CAMBIO 3: shareRemito sin total, con servicios y próximo KM ==========
 function shareRemito() {
   var s = window._rs; var c = window._rc;
   if (!s || !c) return;
   var nom = c.nombre + ' ' + (c.apellido || '');
   var veh = [c.marca, c.modelo, c.anio].filter(Boolean).join(' ') + (c.patente ? ' - ' + c.patente : '');
   var km = s.km ? Number(s.km).toLocaleString() : '---';
+  var proxKm = s.proxKm ? Number(s.proxKm).toLocaleString() : '---';
   var listaServ = s.sops && s.sops.length ? s.sops : (s.tipo ? s.tipo.split(', ') : []);
-  var lineas = '';
-  listaServ.forEach(function(sv) { if (sv) lineas += '\n- ' + sv; });
+  var lineas = listaServ.map(function(sv) { return '- ' + sv; }).join('\n');
   var obs = s.detalle ? '\n\n' + s.detalle : '';
-  var total = s.total ? '\n\n*TOTAL: $' + Number(s.total).toLocaleString('es-AR') + '*' : '';
   var sep = '\n------------------------------';
   var msg = '*LUBRAND Lubricentro*'
     + '\nFecha: ' + fFecha(s.fecha) + ' | N: ' + s.id.slice(-6).toUpperCase()
     + sep + '\n*Cliente:* ' + nom + '\n*Vehiculo:* ' + veh + '\n*KM actuales:* ' + km
-    + sep + '\n*Descripcion:*' + lineas + obs + total
+    + '\n*Próximo service:* ' + proxKm + ' km'
+    + sep + '\n*Servicios realizados:*\n' + lineas + obs
     + '\n' + sep + '\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
   var tel = c.telefono ? (c.telefono.replace(/[^0-9]/g, '')) : '';
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
@@ -1476,6 +1488,7 @@ function copyRemito() {
   navigator.clipboard.writeText(txt).then(function() { alert('Copiado!'); });
 }
 
+// ========== CAMBIO 4: waServDetalle con servicios, sin total ==========
 function waServDetalle(sid) {
   var s = null;
   for (var i = 0; i < servicios.length; i++) { if (servicios[i].id === sid) { s = servicios[i]; break; } }
@@ -1485,7 +1498,14 @@ function waServDetalle(sid) {
   if (!c || !c.telefono) { alert('Sin telefono'); return; }
   var tel = c.telefono.replace(/[^0-9]/g, '');
   var veh = [c.marca, c.modelo].filter(Boolean).join(' ') || 'vehiculo';
-  var msg = 'Hola ' + c.nombre + ', te informamos que realizamos el service de tu ' + veh + '.' + (s.detalle ? '\n\n' + s.detalle : '') + (s.total ? '\n\nTotal: $' + Number(s.total).toLocaleString('es-AR') : '') + '\n\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
+  var listaWA = s.sops && s.sops.length ? s.sops : (s.tipo ? s.tipo.split(', ') : []);
+  var lineasWA = listaWA.map(function(sv){ return '- ' + sv; }).join('\n');
+  var proxKm = s.proxKm ? Number(s.proxKm).toLocaleString() : '';
+  var msg = 'Hola ' + c.nombre + ', te informamos que realizamos el service de tu ' + veh + '.'
+    + '\n\n*Servicios realizados:*\n' + lineasWA
+    + (s.detalle ? '\n\n' + s.detalle : '')
+    + (proxKm ? '\n\n*Próximo service:* ' + proxKm + ' km' : '')
+    + '\n\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
@@ -1667,7 +1687,6 @@ function renderCuentas() {
   el.innerHTML = h;
 }
 
-
 // ========== VISTA SEMANAL TURNOS ==========
 var vistaTurnos = 'lista';
 var semOffset = 0;
@@ -1721,7 +1740,6 @@ function renderSemanal() {
   var label = document.getElementById('sem-label');
   if (label) label.textContent = fmtFecha(lunes) + ' — ' + fmtFecha(sabado);
 
-  // Armar mapa de turnos por fecha+hora
   var todosT = [];
   turnosFirebase.forEach(function(t) { todosT.push({fecha:t.fecha, hora:t.hora||'', bloqueado:t.bloqueado||false, estado:t.estado||'pendiente', nombre:t.nombre||'', vehiculo:t.vehiculo||'', patente:t.patente||'', servicio:t.servicio||'', telefono:t.telefono||'', fbId:t.fbId, origen:t.origen||'online'}); });
   turnos.forEach(function(t) {
@@ -1737,7 +1755,6 @@ function renderSemanal() {
   if (!grid) return;
 
   var h = '<div style="display:grid;grid-template-columns:44px repeat(6,1fr);gap:3px;font-size:11px">';
-  // Headers días
   h += '<div></div>';
   dias.forEach(function(d) {
     var iso = fmtFechaISO(d);
@@ -1745,7 +1762,6 @@ function renderSemanal() {
     h += '<div style="text-align:center;padding:5px 2px;border-radius:8px;' + (esHoy?'background:rgba(21,101,192,.25);color:var(--accent);font-weight:700':'color:var(--muted)') + '">' + DIAS_SEM[d.getDay()] + '<br><span style="font-size:14px;font-weight:500">' + d.getDate() + '</span></div>';
   });
 
-  // Mañana
   h += '<div style="grid-column:1/-1;font-size:10px;color:var(--muted);padding:6px 0 2px;border-top:1px solid rgba(255,255,255,.07);margin-top:3px;text-transform:uppercase;letter-spacing:.5px">Mañana</div>';
   var mSlots = SLOTS_SEM.filter(function(s){ return s < '12:00'; });
   mSlots.forEach(function(slot) {
@@ -1758,7 +1774,6 @@ function renderSemanal() {
     });
   });
 
-  // Tarde
   h += '<div style="grid-column:1/-1;font-size:10px;color:var(--muted);padding:6px 0 2px;border-top:1px solid rgba(255,255,255,.07);margin-top:3px;text-transform:uppercase;letter-spacing:.5px">Tarde</div>';
   var tSlots = SLOTS_SEM.filter(function(s){ return s >= '14:00'; });
   tSlots.forEach(function(slot) {
@@ -1803,13 +1818,13 @@ function verDetalleSem(enc) {
   h += '<div style="font-size:13px">' + (t.servicio||'Sin descripción') + '</div>';
   h += '</div>';
   if (t.telefono) {
-    var tel = t.telefono.replace(/[^0-9]/g,'');
-    if (t.telefono) { var _wat = t.telefono.replace(/[^0-9]/g,''); h += '<button onclick="window.open(&#39;https://wa.me/'+_wat+'&#39;,&#39;_blank&#39;)" class="bfull w" style="margin-top:0">WhatsApp</button>'; }
+    var _wat = t.telefono.replace(/[^0-9]/g,'');
+    h += '<button onclick="window.open(\'https://wa.me/'+_wat+'\',\'_blank\')" class="bfull w" style="margin-top:0">WhatsApp</button>';
   }
   if (t.fbId) {
-    if (t.fbId) { h += '<button onclick="delTurno(&#39;'+t.fbId+'&#39;);closeM(&#39;m-det-turno&#39;)" class="bfull" style="background:rgba(234,84,85,.15);color:var(--danger);border:1px solid rgba(234,84,85,.3);margin-top:8px">Borrar turno</button>'; }
+    h += '<button onclick="delTurno(\''+t.fbId+'\');closeM(\'m-det-turno\')" class="bfull" style="background:rgba(234,84,85,.15);color:var(--danger);border:1px solid rgba(234,84,85,.3);margin-top:8px">Borrar turno</button>';
   } else if (t.localId) {
-    if (!t.fbId && t.localId) { h += '<button onclick="delTurno(&#39;'+t.localId+'&#39;);closeM(&#39;m-det-turno&#39;)" class="bfull" style="background:rgba(234,84,85,.15);color:var(--danger);border:1px solid rgba(234,84,85,.3);margin-top:8px">Borrar turno</button>'; }
+    h += '<button onclick="delTurno(\''+t.localId+'\');closeM(\'m-det-turno\')" class="bfull" style="background:rgba(234,84,85,.15);color:var(--danger);border:1px solid rgba(234,84,85,.3);margin-top:8px">Borrar turno</button>';
   }
   document.getElementById('det-turno-content').innerHTML = h;
   openM('m-det-turno', false);
