@@ -1111,7 +1111,7 @@ function waTurno() {
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
-// ========== completarTurno — FIX ==========
+// ========== completarTurno — FIX DEFINITIVO ==========
 function completarTurno(id) {
   var cid = ''; var fec = ''; var obs = ''; var hora = '';
   for (var i = 0; i < turnos.length; i++) {
@@ -1127,21 +1127,25 @@ function completarTurno(id) {
   LS.set('lb_turnos', turnos);
   var c = null;
   for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === cid) { c = clientes[j]; break; } }
-  goTo('servicios');
-  setTimeout(function() {
-    openM('m-ser', false);
-    setTimeout(function() {
-      if (c) {
-        document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
-        document.getElementById('ser-cid').value = c.id;
-        showSerInfo(c);
-        var km = (c.vehiculos && c.vehiculos.length) ? (c.vehiculos[0].km || '') : (c.km || '');
-        if (km) { document.getElementById('ser-km').value = km; calcProxServ(); }
-      }
-      document.getElementById('ser-fec').value = fec || hoy();
-      document.getElementById('ser-obs').value = obs;
-    }, 600);
-  }, 150);
+
+  // Cambiar vista SIN llamar goTo (que dispara renderAll y resetea el form)
+  document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('on'); });
+  document.querySelectorAll('.nb').forEach(function(el) { el.classList.remove('on'); });
+  document.getElementById('v-servicios').classList.add('on');
+  var nb = document.getElementById('nb-servicios');
+  if (nb) nb.classList.add('on');
+
+  // Abrir modal y rellenar campos directamente
+  openM('m-ser', false);
+  if (c) {
+    document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
+    document.getElementById('ser-cid').value = c.id;
+    showSerInfo(c);
+    var km = (c.vehiculos && c.vehiculos.length) ? (c.vehiculos[0].km || '') : (c.km || '');
+    if (km) { document.getElementById('ser-km').value = km; calcProxServ(); }
+  }
+  document.getElementById('ser-fec').value = fec || hoy();
+  document.getElementById('ser-obs').value = obs;
 }
 
 function delTurno(id) {
