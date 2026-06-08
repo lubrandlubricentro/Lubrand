@@ -1111,7 +1111,7 @@ function waTurno() {
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
-// ========== completarTurno — FIX APLICADO ==========
+// ========== completarTurno — FIX DEFINITIVO ==========
 function completarTurno(id) {
   var cid = ''; var fec = ''; var obs = ''; var hora = '';
   for (var i = 0; i < turnos.length; i++) {
@@ -1127,29 +1127,27 @@ function completarTurno(id) {
   LS.set('lb_turnos', turnos);
   var c = null;
   for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === cid) { c = clientes[j]; break; } }
+  window._turnoCompletarDatos = {c: c, fec: fec, obs: obs};
   goTo('servicios');
   setTimeout(function() {
     openM('m-ser', false);
-    setTimeout(function() {
-      if (c) {
-        document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
-        document.getElementById('ser-cid').value = c.id;
-        showSerInfo(c);
-        var km = '';
-        if (c.vehiculos && c.vehiculos.length) {
-          km = c.vehiculos[0].km || '';
-        } else {
-          km = c.km || '';
-        }
-        if (km) {
-          document.getElementById('ser-km').value = km;
-          calcProxServ();
-        }
+    var datos = window._turnoCompletarDatos;
+    var c2 = datos.c;
+    function rellenar() {
+      if (c2) {
+        document.getElementById('ser-busca').value = c2.nombre + ' ' + (c2.apellido || '');
+        document.getElementById('ser-cid').value = c2.id;
+        showSerInfo(c2);
+        var km = (c2.vehiculos && c2.vehiculos.length) ? (c2.vehiculos[0].km || '') : (c2.km || '');
+        if (km) { document.getElementById('ser-km').value = km; calcProxServ(); }
       }
-      document.getElementById('ser-fec').value = fec || hoy();
-      document.getElementById('ser-obs').value = obs;
-    }, 600);
-  }, 150);
+      document.getElementById('ser-fec').value = datos.fec || hoy();
+      document.getElementById('ser-obs').value = datos.obs;
+    }
+    rellenar();
+    setTimeout(rellenar, 300);
+    setTimeout(rellenar, 700);
+  }, 200);
 }
 
 function delTurno(id) {
