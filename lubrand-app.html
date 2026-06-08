@@ -351,9 +351,10 @@ window.addEventListener('DOMContentLoaded', function() {
   <input id="tur-busca" type="text" placeholder="Nombre o patente..." oninput="acTurno()" autocomplete="off">
   <div class="acl" id="tur-ac"></div>
   <input type="hidden" id="tur-cid">
+  <input type="hidden" id="tur-vid">
   <div id="tur-cinfo" style="display:none" class="cinfo-box">
     <div style="font-weight:800" id="tur-cnom"></div>
-    <div style="font-size:12px;color:var(--muted)" id="tur-cveh"></div>
+    <div id="tur-veh-selector"></div>
   </div>
   <label>Fecha</label><input id="tur-fec" type="date">
   <label>Hora</label><input id="tur-hor" type="time">
@@ -1014,8 +1015,37 @@ function selTurCli(id) {
 
 function showTurInfo(c) {
   document.getElementById('tur-cnom').textContent = c.nombre + ' ' + (c.apellido || '');
-  document.getElementById('tur-cveh').textContent = 'Auto: ' + [c.marca, c.modelo, c.anio].filter(Boolean).join(' ') + ' ' + (c.patente || '');
   document.getElementById('tur-cinfo').style.display = 'block';
+  var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : (c.marca||c.patente ? [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}] : []);
+  var sel = document.getElementById('tur-veh-selector');
+  if (!vehs.length) { sel.innerHTML = '<div style="font-size:12px;color:var(--muted)">Sin vehículos cargados</div>'; return; }
+  if (vehs.length === 1) {
+    document.getElementById('tur-vid').value = '0';
+    var v = vehs[0];
+    sel.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'') + '</div>';
+    return;
+  }
+  var h = '<div style="font-size:11px;color:var(--muted);font-weight:700;margin:6px 0 4px;text-transform:uppercase;letter-spacing:.5px">Elegí el vehículo:</div>';
+  vehs.forEach(function(v, i) {
+    var label = [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'');
+    h += '<button type="button" id="tur-vbtn-'+i+'" onclick="selTurVeh('+i+')" style="display:block;width:100%;text-align:left;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:var(--text);border-radius:9px;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:6px;touch-action:manipulation">'+label+'</button>';
+  });
+  sel.innerHTML = h;
+  document.getElementById('tur-vid').value = '';
+}
+
+function selTurVeh(idx) {
+  var cid = document.getElementById('tur-cid').value;
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
+  if (!c) return;
+  var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}];
+  vehs.forEach(function(_, i) {
+    var btn = document.getElementById('tur-vbtn-'+i);
+    if (btn) btn.style.borderColor = i===idx ? 'var(--accent)' : 'rgba(255,255,255,.1)';
+    if (btn) btn.style.background = i===idx ? 'rgba(21,101,192,.2)' : 'rgba(255,255,255,.06)';
+  });
+  document.getElementById('tur-vid').value = idx;
 }
 
 var SLOTS_APP = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
@@ -1040,9 +1070,11 @@ function saveTurno() {
     }
   }
 
+  var vidx = document.getElementById('tur-vid').value;
   var t = {
     id: LS.uid(), clienteId: cid, fecha: fec,
     hora: hora, obs: obs,
+    vehiculoIdx: vidx !== '' ? parseInt(vidx) : 0,
     creadoEn: new Date().toISOString()
   };
   turnos.push(t);
@@ -1089,6 +1121,8 @@ function saveTurno() {
 
   document.getElementById('tur-busca').value = '';
   document.getElementById('tur-cid').value = '';
+  document.getElementById('tur-vid').value = '';
+  if (document.getElementById('tur-veh-selector')) document.getElementById('tur-veh-selector').innerHTML = '';
   document.getElementById('tur-fec').value = hoy();
   document.getElementById('tur-hor').value = '';
   document.getElementById('tur-obs').value = '';
@@ -1235,7 +1269,7 @@ function renderTurnos() {
     if (t.obs) h += '<div class="cs">Obs: ' + t.obs + '</div>';
     h += '</div><span class="ctag">' + (t.estado) + '</span></div>';
     h += '<div class="ca">';
-    if (t.tel) { var _tel=t.tel.replace(/[^0-9]/g,''); var _msg='Hola '+t.nom+', te confirmamos tu turno.\\n\\nFecha: '+fFecha(t.fecha)+(t.hora?'\\nHora: '+t.hora:'')+'\\n\\nLubrand Lubricentro\\nAgustin Alvarez 1179'; h += '<button class="btn bw" onclick="window.open(&#39;https://wa.me/'+_tel+'?text='+encodeURIComponent(_msg)+'&#39;,&#39;_blank&#39;)">WA</button>'; }
+    if (t.tel) { var _tel=t.tel.replace(/[^0-9]/g,''); var _msg='Hola '+t.nom+', te confirmamos tu turno.%0A%0AFecha: '+fFecha(t.fecha)+(t.hora?'%0AHora: '+t.hora:'')+'%0A%0ALubrand Lubricentro%0AAgustin Alvarez 1179'; h += '<button class="btn bw" onclick="window.open(&#39;https://wa.me/'+_tel+'?text='+encodeURIComponent(_msg)+'&#39;,&#39;_blank&#39;)">WA</button>'; }
     if (!esOnline) h += '<button class="btn bsuc" onclick="completarTurno(&#39;' + t.id + '&#39;)">Completar</button>';
     h += '<button class="btn bd" onclick="delTurno(&#39;' + t.id + '&#39;)">Borrar</button>';
     h += '</div></div>';
