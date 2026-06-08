@@ -1111,7 +1111,7 @@ function waTurno() {
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
-// ========== CAMBIO 1: completarTurno mejorado ==========
+// ========== completarTurno — FIX APLICADO ==========
 function completarTurno(id) {
   var cid = ''; var fec = ''; var obs = ''; var hora = '';
   for (var i = 0; i < turnos.length; i++) {
@@ -1130,26 +1130,25 @@ function completarTurno(id) {
   goTo('servicios');
   setTimeout(function() {
     openM('m-ser', false);
-    if (c) {
-      // Nombre del cliente
-      document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
-      document.getElementById('ser-cid').value = c.id;
-      showSerInfo(c);
-      // Kilometraje del vehículo y cálculo próximo service
-      var km = '';
-      if (c.vehiculos && c.vehiculos.length) {
-        km = c.vehiculos[0].km || '';
-      } else {
-        km = c.km || '';
+    setTimeout(function() {
+      if (c) {
+        document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
+        document.getElementById('ser-cid').value = c.id;
+        showSerInfo(c);
+        var km = '';
+        if (c.vehiculos && c.vehiculos.length) {
+          km = c.vehiculos[0].km || '';
+        } else {
+          km = c.km || '';
+        }
+        if (km) {
+          document.getElementById('ser-km').value = km;
+          calcProxServ();
+        }
       }
-      if (km) {
-        document.getElementById('ser-km').value = km;
-        calcProxServ();
-      }
-    }
-    // Fecha y observaciones del turno
-    document.getElementById('ser-fec').value = fec || hoy();
-    document.getElementById('ser-obs').value = obs;
+      document.getElementById('ser-fec').value = fec || hoy();
+      document.getElementById('ser-obs').value = obs;
+    }, 300);
   }, 150);
 }
 
@@ -1255,8 +1254,6 @@ function waTurnoDirecto(tel, nom, fecha, hora) {
 }
 
 // ========== SERVICIOS ==========
-
-// ========== CAMBIO 2: calcProxServ ==========
 function calcProxServ() {
   var km = parseInt(document.getElementById('ser-km').value || '0');
   var prox = document.getElementById('ser-prox');
@@ -1459,7 +1456,6 @@ function verRemito(id) {
   openM('m-rem', false);
 }
 
-// ========== CAMBIO 3: shareRemito sin total, con servicios y próximo KM ==========
 function shareRemito() {
   var s = window._rs; var c = window._rc;
   if (!s || !c) return;
@@ -1488,7 +1484,6 @@ function copyRemito() {
   navigator.clipboard.writeText(txt).then(function() { alert('Copiado!'); });
 }
 
-// ========== CAMBIO 4: waServDetalle con servicios, sin total ==========
 function waServDetalle(sid) {
   var s = null;
   for (var i = 0; i < servicios.length; i++) { if (servicios[i].id === sid) { s = servicios[i]; break; } }
