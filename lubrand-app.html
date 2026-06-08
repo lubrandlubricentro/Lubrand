@@ -1034,18 +1034,18 @@ function showTurInfo(c) {
   document.getElementById('tur-vid').value = '';
 }
 
-function selTurVeh(idx) {
+function selTurVeh(vIdx) {
   var cid = document.getElementById('tur-cid').value;
   var c = null;
   for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
   if (!c) return;
   var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}];
-  vehs.forEach(function(_, i) {
-    var btn = document.getElementById('tur-vbtn-'+i);
-    if (btn) btn.style.borderColor = i===idx ? 'var(--accent)' : 'rgba(255,255,255,.1)';
-    if (btn) btn.style.background = i===idx ? 'rgba(21,101,192,.2)' : 'rgba(255,255,255,.06)';
-  });
-  document.getElementById('tur-vid').value = idx;
+  for (var j = 0; j < vehs.length; j++) {
+    var btn = document.getElementById('tur-vbtn-'+j);
+    if (btn) btn.style.borderColor = j===vIdx ? 'var(--accent)' : 'rgba(255,255,255,.1)';
+    if (btn) btn.style.background = j===vIdx ? 'rgba(21,101,192,.2)' : 'rgba(255,255,255,.06)';
+  }
+  document.getElementById('tur-vid').value = vIdx;
 }
 
 var SLOTS_APP = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
