@@ -1162,21 +1162,41 @@ function completarTurno(id) {
   var c = null;
   for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === cid) { c = clientes[j]; break; } }
 
-  // Cambiar vista SIN llamar goTo (que dispara renderAll y resetea el form)
+  // Resetear el form primero limpio
+  resetSerForm();
+
+  // Cambiar vista SIN llamar goTo (que dispara renderAll y vuelve a resetear)
   document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(el) { el.classList.remove('on'); });
   document.getElementById('v-servicios').classList.add('on');
   var nb = document.getElementById('nb-servicios');
   if (nb) nb.classList.add('on');
 
-  // Abrir modal y rellenar campos directamente
-  openM('m-ser', false);
+  // Abrir modal
+  document.getElementById('m-ser').classList.add('on');
+
+  // Rellenar campos con datos del turno
   if (c) {
     document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
     document.getElementById('ser-cid').value = c.id;
-    showSerInfo(c);
-    var km = (c.vehiculos && c.vehiculos.length) ? (c.vehiculos[0].km || '') : (c.km || '');
-    if (km) { document.getElementById('ser-km').value = km; calcProxServ(); }
+    // Poblar info del cliente y vehiculo
+    document.getElementById('ser-cnom').textContent = c.nombre + ' ' + (c.apellido || '');
+    document.getElementById('ser-cinfo').style.display = 'block';
+    var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : (c.marca||c.patente ? [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}] : []);
+    var sel = document.getElementById('ser-veh-selector');
+    if (vehs.length === 1) {
+      document.getElementById('ser-vid').value = '0';
+      var v = vehs[0];
+      sel.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'') + '</div>';
+      if (v.km) { document.getElementById('ser-km').value = v.km; calcProxServ(); }
+    } else if (vehs.length > 1) {
+      var h = '<div style="font-size:11px;color:var(--muted);font-weight:700;margin:6px 0 4px;text-transform:uppercase;letter-spacing:.5px">Elegí el vehículo:</div>';
+      vehs.forEach(function(v, vi) {
+        var label = [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'');
+        h += '<button type="button" id="ser-vbtn-'+vi+'" onclick="selSerVeh('+vi+')" style="display:block;width:100%;text-align:left;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:var(--text);border-radius:9px;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:6px;touch-action:manipulation">'+label+'</button>';
+      });
+      sel.innerHTML = h;
+    }
   }
   document.getElementById('ser-fec').value = fec || hoy();
   document.getElementById('ser-obs').value = obs;
