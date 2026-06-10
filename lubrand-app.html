@@ -1146,6 +1146,16 @@ function waTurno() {
 }
 
 // ========== completarTurno — FIX DEFINITIVO ==========
+var _turnoCompletandoId = null;
+function borrarTurnoDeTodasPartes(id) {
+  var fbTurno = null;
+  for (var fi = 0; fi < turnosFirebase.length; fi++) { if (turnosFirebase[fi].fbId === id) { fbTurno = turnosFirebase[fi]; break; } }
+  if (fbTurno && window._db) {
+    window._deleteDoc(window._doc(window._db, 'turnos', id)).catch(function(e){ console.log(e); });
+  }
+  turnos = turnos.filter(function(x) { return x.id !== id; });
+  LS.set('lb_turnos', turnos);
+}
 function completarTurno(id) {
   var cid = ''; var fec = ''; var obs = ''; var hora = '';
   for (var i = 0; i < turnos.length; i++) {
@@ -1157,14 +1167,8 @@ function completarTurno(id) {
       break;
     }
   }
-  // Borrar de Firebase si es turno online
-  var fbTurno = null;
-  for (var fi = 0; fi < turnosFirebase.length; fi++) { if (turnosFirebase[fi].fbId === id) { fbTurno = turnosFirebase[fi]; break; } }
-  if (fbTurno && window._db) {
-    window._deleteDoc(window._doc(window._db, 'turnos', id)).catch(function(e){ console.log(e); });
-  }
-  turnos = turnos.filter(function(x) { return x.id !== id; });
-  LS.set('lb_turnos', turnos);
+  _turnoCompletandoId = id;
+  borrarTurnoDeTodasPartes(id);
   var c = null;
   for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === cid) { c = clientes[j]; break; } }
 
@@ -1457,6 +1461,7 @@ function saveServicio() {
   }
   LS.set('lb_clientes', clientes);
   LS.set('lb_servicios', servicios);
+  if (_turnoCompletandoId) { borrarTurnoDeTodasPartes(_turnoCompletandoId); _turnoCompletandoId = null; }
   resetSerForm(); closeM('m-ser'); renderAll();
 }
 
