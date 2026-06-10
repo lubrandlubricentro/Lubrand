@@ -1158,6 +1158,7 @@ function borrarTurnoDeTodasPartes(id) {
 }
 function completarTurno(id) {
   var cid = ''; var fec = ''; var obs = ''; var hora = '';
+  // Buscar en turnos locales
   for (var i = 0; i < turnos.length; i++) {
     if (turnos[i].id === id) {
       cid = turnos[i].clienteId;
@@ -1165,6 +1166,18 @@ function completarTurno(id) {
       obs = turnos[i].obs || '';
       hora = turnos[i].hora || '';
       break;
+    }
+  }
+  // Si no encontro, buscar en turnosFirebase (turnos online)
+  if (!cid) {
+    for (var k = 0; k < turnosFirebase.length; k++) {
+      if (turnosFirebase[k].fbId === id) {
+        cid = turnosFirebase[k].clienteId || '';
+        fec = turnosFirebase[k].fecha || '';
+        obs = turnosFirebase[k].servicio || '';
+        hora = turnosFirebase[k].hora || '';
+        break;
+      }
     }
   }
   _turnoCompletandoId = id;
@@ -1300,7 +1313,7 @@ function renderTurnos() {
     h += '</div><span class="ctag">' + (t.estado) + '</span></div>';
     h += '<div class="ca">';
     if (t.tel) { var _tel=t.tel.replace(/[^0-9]/g,''); var _msg='Hola '+t.nom+', te confirmamos tu turno.%0A%0AFecha: '+fFecha(t.fecha)+(t.hora?'%0AHora: '+t.hora:'')+'%0A%0ALubrand Lubricentro%0AAgustin Alvarez 1179'; h += '<button class="btn bw" onclick="window.open(&#39;https://wa.me/'+_tel+'?text='+encodeURIComponent(_msg)+'&#39;,&#39;_blank&#39;)">WA</button>'; }
-    if (!esOnline) h += '<button class="btn bsuc" onclick="completarTurno(&#39;' + t.id + '&#39;)">Completar</button>';
+    h += '<button class="btn bsuc" onclick="completarTurno(&#39;' + t.id + '&#39;)">Completar</button>';
     h += '<button class="btn bd" onclick="delTurno(&#39;' + t.id + '&#39;)">Borrar</button>';
     h += '</div></div>';
   });
