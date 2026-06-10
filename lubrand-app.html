@@ -1157,6 +1157,12 @@ function completarTurno(id) {
       break;
     }
   }
+  // Borrar de Firebase si es turno online
+  var fbTurno = null;
+  for (var fi = 0; fi < turnosFirebase.length; fi++) { if (turnosFirebase[fi].fbId === id) { fbTurno = turnosFirebase[fi]; break; } }
+  if (fbTurno && window._db) {
+    window._deleteDoc(window._doc(window._db, 'turnos', id)).catch(function(e){ console.log(e); });
+  }
   turnos = turnos.filter(function(x) { return x.id !== id; });
   LS.set('lb_turnos', turnos);
   var c = null;
