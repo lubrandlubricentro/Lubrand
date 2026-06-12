@@ -1309,48 +1309,53 @@ function completarTurno(id) {
     }
   }
   _turnoCompletandoId = id;
-  borrarTurnoDeTodasPartes(id);
+  // NO borrar el turno aquí — se borra solo cuando se presiona "Registrar Servicio" (saveServicio)
   var c = null;
   for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === cid) { c = clientes[j]; break; } }
 
-  // Resetear el form primero limpio
+  // Resetear el form y navegar
   resetSerForm();
-
-  // Cambiar vista SIN llamar goTo (que dispara renderAll y vuelve a resetear)
   document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(el) { el.classList.remove('on'); });
   document.getElementById('v-servicios').classList.add('on');
   var nb = document.getElementById('nb-servicios');
   if (nb) nb.classList.add('on');
-
-  // Abrir modal
   document.getElementById('m-ser').classList.add('on');
 
-  // Rellenar campos con datos del turno
-  if (c) {
-    document.getElementById('ser-busca').value = c.nombre + ' ' + (c.apellido || '');
-    document.getElementById('ser-cid').value = c.id;
-    // Poblar info del cliente y vehiculo
-    document.getElementById('ser-cnom').textContent = c.nombre + ' ' + (c.apellido || '');
-    document.getElementById('ser-cinfo').style.display = 'block';
-    var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : (c.marca||c.patente ? [{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente,km:c.km}] : []);
-    var sel = document.getElementById('ser-veh-selector');
-    if (vehs.length === 1) {
-      document.getElementById('ser-vid').value = '0';
-      var v = vehs[0];
-      sel.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'') + '</div>';
-      if (v.km) { document.getElementById('ser-km').value = v.km; calcProxServ(); }
-    } else if (vehs.length > 1) {
-      var h = '<div style="font-size:11px;color:var(--muted);font-weight:700;margin:6px 0 4px;text-transform:uppercase;letter-spacing:.5px">Elegí el vehículo:</div>';
-      vehs.forEach(function(v, vi) {
-        var label = [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'');
-        h += '<button type="button" id="ser-vbtn-'+vi+'" onclick="selSerVeh('+vi+')" style="display:block;width:100%;text-align:left;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:var(--text);border-radius:9px;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:6px;touch-action:manipulation">'+label+'</button>';
-      });
-      sel.innerHTML = h;
+  // Guardar los datos para rellenar después del onSnapshot
+  var _cid = cid; var _fec = fec; var _obs = obs;
+
+  function _rellenarForm() {
+    var _c = null;
+    for (var x = 0; x < clientes.length; x++) { if (clientes[x].id === _cid) { _c = clientes[x]; break; } }
+    if (_c) {
+      document.getElementById('ser-busca').value = _c.nombre + ' ' + (_c.apellido || '');
+      document.getElementById('ser-cid').value = _c.id;
+      document.getElementById('ser-cnom').textContent = _c.nombre + ' ' + (_c.apellido || '');
+      document.getElementById('ser-cinfo').style.display = 'block';
+      var vehs = (_c.vehiculos && _c.vehiculos.length) ? _c.vehiculos : (_c.marca||_c.patente ? [{marca:_c.marca,modelo:_c.modelo,anio:_c.anio,patente:_c.patente,km:_c.km}] : []);
+      var sel = document.getElementById('ser-veh-selector');
+      if (vehs.length === 1) {
+        document.getElementById('ser-vid').value = '0';
+        var v = vehs[0];
+        sel.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'') + '</div>';
+        if (v.km) { document.getElementById('ser-km').value = v.km; calcProxServ(); }
+      } else if (vehs.length > 1) {
+        var hv = '<div style="font-size:11px;color:var(--muted);font-weight:700;margin:6px 0 4px;text-transform:uppercase;letter-spacing:.5px">Elegí el vehículo:</div>';
+        vehs.forEach(function(v, vi) {
+          var label = [v.marca,v.modelo,v.anio].filter(Boolean).join(' ') + (v.patente?' - '+v.patente:'');
+          hv += '<button type="button" id="ser-vbtn-'+vi+'" onclick="selSerVeh('+vi+')" style="display:block;width:100%;text-align:left;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:var(--text);border-radius:9px;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:6px;touch-action:manipulation">'+label+'</button>';
+        });
+        sel.innerHTML = hv;
+      }
     }
+    document.getElementById('ser-fec').value = _fec || hoy();
+    document.getElementById('ser-obs').value = _obs;
   }
-  document.getElementById('ser-fec').value = fec || hoy();
-  document.getElementById('ser-obs').value = obs;
+
+  // Rellenar ahora y también después de 600ms por si onSnapshot resetea el form
+  _rellenarForm();
+  setTimeout(_rellenarForm, 600);
 }
 
 function delTurno(id) {
