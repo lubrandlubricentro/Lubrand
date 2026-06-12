@@ -1494,7 +1494,7 @@ function renderTurnos() {
         h += '<button class="btn" style="background:rgba(255,159,67,.2);color:#ff9f43;font-size:11px" onclick="completarClienteDesdeTurno(&#39;' + t.fbId + '&#39;,&#39;' + detCli.cliente.id + '&#39;)">⚠️ Completar datos</button>';
       }
     }
-    if (t.tel) { var _tel=t.tel.replace(/[^0-9]/g,''); var _msg='Hola '+t.nom+', te confirmamos tu turno.%0A%0AFecha: '+fFecha(t.fecha)+(t.hora?'%0AHora: '+t.hora:'')+'%0A%0ALubrand Lubricentro%0AAgustin Alvarez 1179'; h += '<button class="btn bw" onclick="window.open(&#39;https://wa.me/'+_tel+'?text='+encodeURIComponent(_msg)+'&#39;,&#39;_blank&#39;)">WA</button>'; }
+    if (t.tel) { var _tel=t.tel.replace(/[^0-9]/g,''); var _msg='Hola '+t.nom+', te confirmamos tu turno.\n\nFecha: '+fFecha(t.fecha)+(t.hora?'\nHora: '+t.hora:'')+'\n\nLubrand Lubricentro\nAgustin Alvarez 1179'; h += '<button class="btn bw" onclick="window.open(&#39;https://wa.me/'+_tel+'?text='+encodeURIComponent(_msg)+'&#39;,&#39;_blank&#39;)">WA</button>'; var _diaNom=new Date(t.fecha+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long'}); var _msgRec='Hola '+t.nom+', te recordamos que tens turno en Lubrand Lubricentro el '+_diaNom+' '+fFecha(t.fecha)+(t.hora?' a las '+t.hora:'')+'.\n\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.'; h += '<button class="btn" style="background:rgba(255,159,67,.2);color:#ff9f43" onclick="window.open(&#39;https://wa.me/'+_tel+'?text='+encodeURIComponent(_msgRec)+'&#39;,&#39;_blank&#39;)">🔔 Recordar</button>'; }
     h += '<button class="btn bsuc" onclick="completarTurno(&#39;' + t.id + '&#39;)">Completar</button>';
     h += '<button class="btn bd" onclick="delTurno(&#39;' + t.id + '&#39;)">Borrar</button>';
     h += '</div></div>';
