@@ -1353,9 +1353,11 @@ function completarTurno(id) {
     document.getElementById('ser-obs').value = _obs;
   }
 
-  // Rellenar ahora y también después de 600ms por si onSnapshot resetea el form
+  // Rellenar varias veces para sobrevivir al onSnapshot de Firebase
   _rellenarForm();
-  setTimeout(_rellenarForm, 600);
+  setTimeout(_rellenarForm, 500);
+  setTimeout(_rellenarForm, 1200);
+  setTimeout(_rellenarForm, 2500);
 }
 
 function delTurno(id) {
@@ -1633,6 +1635,8 @@ function saveServicio() {
 }
 
 function resetSerForm() {
+  // Si hay un turno siendo completado, no resetear el form
+  if (_turnoCompletandoId) return;
   document.getElementById('ser-busca').value = '';
   document.getElementById('ser-cid').value = '';
   document.getElementById('ser-vid').value = '';
