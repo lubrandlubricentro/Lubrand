@@ -1826,7 +1826,7 @@ function waRec(cid) {
   var ult = hist[0];
   var dias = ult ? Math.floor((Date.now() - new Date(ult.fecha).getTime()) / (24 * 60 * 60 * 1000)) : 90;
   var nom = c.nombre + (c.apellido ? ' ' + c.apellido : '');
-  var msg = 'Hola ' + nom + ' te recordamos que pasaron ' + dias + ' dias de tu ultimo service. Recorda chequear tus fluidos y ver si estas proximo al servicio para reservar tu turno.\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
+  var msg = 'Hola ' + nom + ' te recordamos que pasaron ' + dias + ' dias de tu ultimo service. Recorda chequear tus fluidos y ver si estas proximo al servicio.\n\nReserva tu turno online aca:\nhttps://lubrandlubricentro.github.io/Lubrand/turnos.html\n\nLubrand Lubricentro\nAgustin Alvarez 1179\nMensaje automatico, no responder.';
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
   if (ult) {
     for (var k = 0; k < servicios.length; k++) { if (servicios[k].id === ult.id) { servicios[k].avisado = true; break; } }
