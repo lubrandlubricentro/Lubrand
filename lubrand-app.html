@@ -1156,6 +1156,134 @@ function borrarTurnoDeTodasPartes(id) {
   turnos = turnos.filter(function(x) { return x.id !== id; });
   LS.set('lb_turnos', turnos);
 }
+// ========== DETECCIÓN CLIENTE DESDE TURNO ONLINE ==========
+function buscarClientePorTurno(t) {
+  // t es un objeto turno Firebase con: nombre, telefono, patente, vehiculo
+  var telNorm = (t.telefono || '').replace(/[^0-9]/g, '');
+  var patNorm = (t.patente || '').replace(/\s/g, '').toUpperCase();
+  var encontrado = null;
+
+  // Buscar por teléfono primero
+  if (telNorm) {
+    for (var i = 0; i < clientes.length; i++) {
+      var cTel = (clientes[i].telefono || '').replace(/[^0-9]/g, '');
+      if (cTel && cTel === telNorm) { encontrado = clientes[i]; break; }
+    }
+  }
+  // Si no encontró por teléfono, buscar por patente
+  if (!encontrado && patNorm) {
+    for (var j = 0; j < clientes.length; j++) {
+      var c = clientes[j];
+      // Revisar patente raíz
+      var cPat = (c.patente || '').replace(/\s/g, '').toUpperCase();
+      if (cPat && cPat === patNorm) { encontrado = c; break; }
+      // Revisar patentes en vehiculos[]
+      var vehs = c.vehiculos || [];
+      for (var k = 0; k < vehs.length; k++) {
+        var vPat = (vehs[k].patente || '').replace(/\s/g, '').toUpperCase();
+        if (vPat && vPat === patNorm) { encontrado = c; break; }
+      }
+      if (encontrado) break;
+    }
+  }
+
+  if (!encontrado) return { estado: 'nuevo', cliente: null };
+
+  // Cliente encontrado — verificar si le faltan datos relevantes
+  var faltaTel = !encontrado.telefono && telNorm;
+  var tienePatente = false;
+  var vehs2 = encontrado.vehiculos && encontrado.vehiculos.length ? encontrado.vehiculos : (encontrado.patente ? [{patente: encontrado.patente}] : []);
+  for (var m = 0; m < vehs2.length; m++) {
+    if ((vehs2[m].patente || '').replace(/\s/g,'').toUpperCase() === patNorm) { tienePatente = true; break; }
+  }
+  var faltaPatente = patNorm && !tienePatente;
+
+  if (faltaTel || faltaPatente) return { estado: 'incompleto', cliente: encontrado };
+  return { estado: 'completo', cliente: encontrado };
+}
+
+function crearClienteDesdeTurno(fbId) {
+  var t = null;
+  for (var i = 0; i < turnosFirebase.length; i++) { if (turnosFirebase[i].fbId === fbId) { t = turnosFirebase[i]; break; } }
+  if (!t) { alert('No se encontró el turno'); return; }
+
+  // Separar nombre y apellido por el primer espacio
+  var partes = (t.nombre || '').trim().split(' ');
+  var nom = partes[0] || '';
+  var ape = partes.slice(1).join(' ');
+
+  var veh = { marca: '', modelo: t.vehiculo || '', anio: '', patente: (t.patente || '').toUpperCase(), km: '' };
+
+  var nuevo = {
+    id: LS.uid(),
+    nombre: nom,
+    apellido: ape,
+    telefono: t.telefono || '',
+    patente: (t.patente || '').toUpperCase(),
+    km: '',
+    marca: '',
+    modelo: t.vehiculo || '',
+    vehiculos: [veh]
+  };
+
+  clientes.push(nuevo);
+  LS.set('lb_clientes', clientes);
+  renderAll();
+  alert('✅ Cliente "' + nom + ' ' + ape + '" creado correctamente.');
+}
+
+function completarClienteDesdeTurno(fbId, clienteId) {
+  var t = null;
+  for (var i = 0; i < turnosFirebase.length; i++) { if (turnosFirebase[i].fbId === fbId) { t = turnosFirebase[i]; break; } }
+  if (!t) { alert('No se encontró el turno'); return; }
+
+  var c = null;
+  for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === clienteId) { c = clientes[j]; break; } }
+  if (!c) { alert('No se encontró el cliente'); return; }
+
+  var actualizado = false;
+  var telNorm = (t.telefono || '').replace(/[^0-9]/g, '');
+  var patNorm = (t.patente || '').replace(/\s/g, '').toUpperCase();
+
+  // Completar teléfono solo si está vacío
+  if (!c.telefono && telNorm) { c.telefono = t.telefono; actualizado = true; }
+
+  // Completar patente si no existe en ningún vehículo
+  if (patNorm) {
+    var vehs = c.vehiculos && c.vehiculos.length ? c.vehiculos : [];
+    var tienePat = false;
+    for (var k = 0; k < vehs.length; k++) {
+      if ((vehs[k].patente || '').replace(/\s/g,'').toUpperCase() === patNorm) { tienePat = true; break; }
+    }
+    if (!tienePat) {
+      if (vehs.length > 0) {
+        // Agregar patente al primer vehículo que no tenga patente
+        var sinPat = false;
+        for (var m = 0; m < vehs.length; m++) {
+          if (!vehs[m].patente) { vehs[m].patente = patNorm; sinPat = true; actualizado = true; break; }
+        }
+        // Si todos tienen patente, agregar un vehículo nuevo con los datos del turno
+        if (!sinPat) {
+          vehs.push({ marca: '', modelo: t.vehiculo || '', anio: '', patente: patNorm, km: '' });
+          actualizado = true;
+        }
+      } else {
+        c.vehiculos = [{ marca: '', modelo: t.vehiculo || '', anio: '', patente: patNorm, km: '' }];
+        c.patente = patNorm;
+        actualizado = true;
+      }
+    }
+  }
+
+  if (actualizado) {
+    LS.set('lb_clientes', clientes);
+    renderAll();
+    alert('✅ Datos del cliente completados correctamente.');
+  } else {
+    alert('ℹ️ No había datos nuevos para agregar.');
+  }
+}
+
 function completarTurno(id) {
   var cid = ''; var fec = ''; var obs = ''; var hora = '';
   // Buscar en turnos locales
@@ -1304,14 +1432,35 @@ function renderTurnos() {
   var h = '';
   lista.forEach(function(t) {
     var esOnline = t.origen === 'online';
+    // Badge de estado de cliente (solo para turnos online)
+    var badgeCli = '';
+    var detCli = null;
+    if (esOnline && t.fbId) {
+      var fbT = null;
+      for (var fi = 0; fi < turnosFirebase.length; fi++) { if (turnosFirebase[fi].fbId === t.fbId) { fbT = turnosFirebase[fi]; break; } }
+      if (fbT) {
+        detCli = buscarClientePorTurno(fbT);
+        if (detCli.estado === 'nuevo') badgeCli = ' <span style="background:rgba(21,101,192,.15);color:var(--accent);font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700">➕ Sin cliente</span>';
+        else if (detCli.estado === 'incompleto') badgeCli = ' <span style="background:rgba(255,159,67,.15);color:#ff9f43;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700">⚠️ Incompleto</span>';
+        else badgeCli = ' <span style="background:rgba(40,199,111,.15);color:var(--success);font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700">✅ Cliente OK</span>';
+      }
+    }
     h += '<div class="card">';
     h += '<div style="display:flex;justify-content:space-between;align-items:flex-start">';
-    h += '<div><div class="cn">' + t.nom + (esOnline ? ' <span style="background:rgba(40,199,111,.15);color:var(--success);font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700">ONLINE</span>' : '') + '</div>';
+    h += '<div><div class="cn">' + t.nom + (esOnline ? ' <span style="background:rgba(40,199,111,.15);color:var(--success);font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700">ONLINE</span>' : '') + badgeCli + '</div>';
     if (t.veh) h += '<div class="cs">' + t.veh + '</div>';
     h += '<div class="cs">Fecha: ' + fFecha(t.fecha) + (t.hora ? ' | Hora: ' + t.hora : '') + '</div>';
     if (t.obs) h += '<div class="cs">Obs: ' + t.obs + '</div>';
     h += '</div><span class="ctag">' + (t.estado) + '</span></div>';
     h += '<div class="ca">';
+    // Botones de gestión de cliente para turnos online
+    if (esOnline && detCli) {
+      if (detCli.estado === 'nuevo') {
+        h += '<button class="btn" style="background:rgba(21,101,192,.2);color:var(--accent);font-size:11px" onclick="crearClienteDesdeTurno(&#39;' + t.fbId + '&#39;)">➕ Crear cliente</button>';
+      } else if (detCli.estado === 'incompleto') {
+        h += '<button class="btn" style="background:rgba(255,159,67,.2);color:#ff9f43;font-size:11px" onclick="completarClienteDesdeTurno(&#39;' + t.fbId + '&#39;,&#39;' + detCli.cliente.id + '&#39;)">⚠️ Completar datos</button>';
+      }
+    }
     if (t.tel) { var _tel=t.tel.replace(/[^0-9]/g,''); var _msg='Hola '+t.nom+', te confirmamos tu turno.%0A%0AFecha: '+fFecha(t.fecha)+(t.hora?'%0AHora: '+t.hora:'')+'%0A%0ALubrand Lubricentro%0AAgustin Alvarez 1179'; h += '<button class="btn bw" onclick="window.open(&#39;https://wa.me/'+_tel+'?text='+encodeURIComponent(_msg)+'&#39;,&#39;_blank&#39;)">WA</button>'; }
     h += '<button class="btn bsuc" onclick="completarTurno(&#39;' + t.id + '&#39;)">Completar</button>';
     h += '<button class="btn bd" onclick="delTurno(&#39;' + t.id + '&#39;)">Borrar</button>';
@@ -1873,6 +2022,15 @@ function renderSlotCell(t, slot, fecha) {
 function verDetalleSem(enc) {
   var t;
   try { t = JSON.parse(decodeURIComponent(enc)); } catch(e) { return; }
+
+  // Detectar estado de cliente para turnos online
+  var detCli = null;
+  if (t.fbId) {
+    var fbT = null;
+    for (var fi = 0; fi < turnosFirebase.length; fi++) { if (turnosFirebase[fi].fbId === t.fbId) { fbT = turnosFirebase[fi]; break; } }
+    if (fbT) detCli = buscarClientePorTurno(fbT);
+  }
+
   var h = '';
   h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
   h += '<div style="font-size:24px;font-weight:800;color:var(--accent)">' + t.hora + '</div>';
@@ -1881,11 +2039,24 @@ function verDetalleSem(enc) {
   h += '<div class="card" style="margin-bottom:10px">';
   h += '<div style="font-weight:800;font-size:15px;margin-bottom:4px">' + (t.nombre||'---') + '</div>';
   h += '<div style="font-size:12px;color:var(--muted)">' + (t.vehiculo||'---') + (t.patente?' — '+t.patente:'') + '</div>';
+  if (t.telefono) h += '<div style="font-size:12px;color:var(--muted);margin-top:4px">Tel: ' + t.telefono + '</div>';
+  // Badge de estado de cliente
+  if (detCli) {
+    if (detCli.estado === 'nuevo') h += '<div style="margin-top:8px"><span style="background:rgba(21,101,192,.15);color:var(--accent);font-size:11px;padding:3px 8px;border-radius:10px;font-weight:700">➕ Sin cliente registrado</span></div>';
+    else if (detCli.estado === 'incompleto') h += '<div style="margin-top:8px"><span style="background:rgba(255,159,67,.15);color:#ff9f43;font-size:11px;padding:3px 8px;border-radius:10px;font-weight:700">⚠️ Cliente con datos faltantes</span></div>';
+    else h += '<div style="margin-top:8px"><span style="background:rgba(40,199,111,.15);color:var(--success);font-size:11px;padding:3px 8px;border-radius:10px;font-weight:700">✅ Cliente registrado y completo</span></div>';
+  }
   h += '</div>';
   h += '<div class="card" style="margin-bottom:10px">';
   h += '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;font-weight:700;letter-spacing:.5px">Servicio</div>';
   h += '<div style="font-size:13px">' + (t.servicio||'Sin descripción') + '</div>';
   h += '</div>';
+  // Botones de gestión de cliente
+  if (detCli && detCli.estado === 'nuevo') {
+    h += '<button onclick="crearClienteDesdeTurno(\''+t.fbId+'\');closeM(\'m-det-turno\')" class="bfull" style="background:rgba(21,101,192,.2);color:var(--accent);border:1px solid rgba(21,101,192,.3);margin-bottom:6px">➕ Crear cliente desde turno</button>';
+  } else if (detCli && detCli.estado === 'incompleto') {
+    h += '<button onclick="completarClienteDesdeTurno(\''+t.fbId+'\',\''+detCli.cliente.id+'\');closeM(\'m-det-turno\')" class="bfull" style="background:rgba(255,159,67,.2);color:#ff9f43;border:1px solid rgba(255,159,67,.3);margin-bottom:6px">⚠️ Completar datos del cliente</button>';
+  }
   if (t.telefono) {
     var _wat = t.telefono.replace(/[^0-9]/g,'');
     h += '<button onclick="window.open(\'https://wa.me/'+_wat+'\',\'_blank\')" class="bfull w" style="margin-top:0">WhatsApp</button>';
