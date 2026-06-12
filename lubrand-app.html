@@ -1309,25 +1309,51 @@ function completarTurno(id) {
     }
   }
   _turnoCompletandoId = id;
-  // NO borrar el turno aquí — se borra solo cuando se presiona "Registrar Servicio" (saveServicio)
-  var c = null;
-  for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === cid) { c = clientes[j]; break; } }
 
-  // Resetear el form y navegar
-  resetSerForm();
+  // Buscar el turno Firebase para tener telefono y patente
+  var _fbTurno = null;
+  for (var fi = 0; fi < turnosFirebase.length; fi++) { if (turnosFirebase[fi].fbId === id) { _fbTurno = turnosFirebase[fi]; break; } }
+
+  // Navegar sin llamar goTo (que dispara renderAll)
   document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(el) { el.classList.remove('on'); });
   document.getElementById('v-servicios').classList.add('on');
   var nb = document.getElementById('nb-servicios');
   if (nb) nb.classList.add('on');
+
+  // Limpiar manualmente los campos sin llamar resetSerForm()
+  document.getElementById('ser-busca').value = '';
+  document.getElementById('ser-cid').value = '';
+  document.getElementById('ser-vid').value = '';
+  document.getElementById('ser-fec').value = hoy();
+  document.getElementById('ser-km').value = '';
+  document.getElementById('ser-prox').value = '';
+  document.getElementById('ser-obs').value = '';
+  document.getElementById('ser-cinfo').style.display = 'none';
+  document.getElementById('ser-veh-selector').innerHTML = '';
+  document.getElementById('ser-ac').classList.remove('on');
+  resetTogs();
+
   document.getElementById('m-ser').classList.add('on');
 
-  // Guardar los datos para rellenar después del onSnapshot
+  // Guardar los datos para rellenar
   var _cid = cid; var _fec = fec; var _obs = obs;
 
   function _rellenarForm() {
     var _c = null;
-    for (var x = 0; x < clientes.length; x++) { if (clientes[x].id === _cid) { _c = clientes[x]; break; } }
+    // Buscar por clienteId primero
+    if (_cid) { for (var x = 0; x < clientes.length; x++) { if (clientes[x].id === _cid) { _c = clientes[x]; break; } } }
+    // Si no encontro por clienteId, buscar por telefono o patente del turno Firebase
+    if (!_c && _fbTurno) {
+      var telNorm = (_fbTurno.telefono || '').replace(/[^0-9]/g, '');
+      var patNorm = (_fbTurno.patente || '').replace(/\s/g, '').toUpperCase();
+      for (var y = 0; y < clientes.length; y++) {
+        var cTel = (clientes[y].telefono || '').replace(/[^0-9]/g, '');
+        var cPat = (clientes[y].patente || '').replace(/\s/g, '').toUpperCase();
+        var vPats = (clientes[y].vehiculos || []).map(function(v){ return (v.patente||'').replace(/\s/g,'').toUpperCase(); });
+        if ((telNorm && cTel === telNorm) || (patNorm && cPat === patNorm) || (patNorm && vPats.indexOf(patNorm) !== -1)) { _c = clientes[y]; break; }
+      }
+    }
     if (_c) {
       document.getElementById('ser-busca').value = _c.nombre + ' ' + (_c.apellido || '');
       document.getElementById('ser-cid').value = _c.id;
