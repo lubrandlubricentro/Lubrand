@@ -1075,6 +1075,7 @@ function saveTurno() {
     id: LS.uid(), clienteId: cid, fecha: fec,
     hora: hora, obs: obs,
     vehiculoIdx: vidx !== '' ? parseInt(vidx) : 0,
+    estado: 'confirmado',
     creadoEn: new Date().toISOString()
   };
   turnos.push(t);
@@ -1445,7 +1446,7 @@ function renderTurnos() {
     lista.push({id: t.id, fbId: null, fecha: t.fecha, hora: t.hora||'', obs: t.obs||'', origen: 'app',
       nom: c ? c.nombre+' '+(c.apellido||'') : '---',
       veh: c ? [c.marca,c.modelo,c.patente].filter(Boolean).join(' - ') : '',
-      tel: c ? c.telefono : '', clienteId: t.clienteId, estado: 'pendiente'});
+      tel: c ? c.telefono : '', clienteId: t.clienteId, estado: t.estado||'confirmado'});
   });
   turnosFirebase.forEach(function(t) {
     var c = null;
@@ -2008,7 +2009,7 @@ function renderSemanal() {
     for (var i=0;i<clientes.length;i++){if(clientes[i].id===t.clienteId){c=clientes[i];break;}}
     var veh = c ? ([c.marca,c.modelo].filter(Boolean).join(' ')||'') : '';
     var vobj = c && c.vehiculos && c.vehiculos.length ? c.vehiculos[0] : null;
-    todosT.push({fecha:t.fecha, hora:t.hora||'', bloqueado:false, estado:'pendiente', nombre:c?(c.apellido||c.nombre):'---', vehiculo:vobj?([vobj.marca,vobj.modelo].filter(Boolean).join(' ')):veh, patente:vobj?(vobj.patente||''):(c?c.patente||'':''), servicio:t.obs||'', telefono:c?c.telefono||'':'', fbId:null, origen:'app', localId:t.id});
+    todosT.push({fecha:t.fecha, hora:t.hora||'', bloqueado:false, estado:t.estado||'confirmado', nombre:c?(c.apellido||c.nombre):'---', vehiculo:vobj?([vobj.marca,vobj.modelo].filter(Boolean).join(' ')):veh, patente:vobj?(vobj.patente||''):(c?c.patente||'':''), servicio:t.obs||'', telefono:c?c.telefono||'':'', fbId:null, origen:'app', localId:t.id});
   });
 
   var hoyISO = fmtFechaISO(new Date());
