@@ -298,6 +298,12 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
 
   <div class="cfg-box">
+    <h3>📅 Feriados Nacionales</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Los feriados están bloqueados automáticamente. Podés desbloquear un feriado si decidís trabajar ese día.</p>
+    <div id="feriados-list"></div>
+  </div>
+
+  <div class="cfg-box">
     <h3>ℹ️ Info</h3>
     <div style="font-size:12px;color:var(--muted);line-height:1.8">
       <div>📍 Lubrand Lubricentro</div>
@@ -481,6 +487,7 @@ var LS = {
 };
 
 var clientes = LS.get('lb_clientes');
+var feriadosConfig = LS.get('lb_feriados') || {};
 var turnos = LS.get('lb_turnos');
 var turnosFirebase = [];
 var fbConectado = false;
@@ -506,7 +513,7 @@ function goTo(v) {
   var nb = document.getElementById('nb-' + v);
   if (nb) nb.classList.add('on');
   renderAll();
-  if (v === 'config') renderConfigStats();
+  if (v === 'config') { renderConfigStats(); renderFeriados(); }
 }
 
 function openFab() {
@@ -693,6 +700,83 @@ function renderStats() {
     if (!b) { b = document.createElement('span'); b.className = 'bdg'; document.getElementById('nb-home').appendChild(b); }
     b.textContent = r;
   } else { if (b) b.remove(); }
+}
+
+// ========== FERIADOS ==========
+var FERIADOS_2026 = [
+  {fecha:'2026-01-01', nombre:'Año Nuevo'},
+  {fecha:'2026-02-16', nombre:'Carnaval'},
+  {fecha:'2026-02-17', nombre:'Carnaval'},
+  {fecha:'2026-03-24', nombre:'Día de la Memoria'},
+  {fecha:'2026-04-02', nombre:'Día del Veterano de Malvinas'},
+  {fecha:'2026-04-03', nombre:'Viernes Santo'},
+  {fecha:'2026-05-01', nombre:'Día del Trabajador'},
+  {fecha:'2026-05-25', nombre:'Día de la Revolución de Mayo'},
+  {fecha:'2026-06-15', nombre:'Paso a la Inmortalidad del Gral. Güemes'},
+  {fecha:'2026-06-20', nombre:'Día de la Bandera'},
+  {fecha:'2026-07-09', nombre:'Día de la Independencia'},
+  {fecha:'2026-08-17', nombre:'Paso a la Inmortalidad del Gral. San Martín'},
+  {fecha:'2026-10-12', nombre:'Día del Respeto a la Diversidad Cultural'},
+  {fecha:'2026-11-20', nombre:'Día de la Soberanía Nacional'},
+  {fecha:'2026-12-08', nombre:'Inmaculada Concepción de María'},
+  {fecha:'2026-12-25', nombre:'Navidad'}
+];
+
+function esFeriado(fecha) {
+  var cfg = feriadosConfig[fecha];
+  if (cfg === 'completo') return false; // desbloqueado completo
+  var f = FERIADOS_2026.find(function(x){ return x.fecha === fecha; });
+  return !!f;
+}
+
+function estadoFeriado(fecha) {
+  var cfg = feriadosConfig[fecha];
+  if (!cfg) return 'bloqueado';
+  return cfg; // 'completo', 'maniana', 'tarde'
+}
+
+function setFeriado(fecha, estado) {
+  if (estado === 'bloqueado') {
+    delete feriadosConfig[fecha];
+  } else {
+    feriadosConfig[fecha] = estado;
+  }
+  LS.set('lb_feriados', feriadosConfig);
+  renderFeriados();
+}
+
+function renderFeriados() {
+  var el = document.getElementById('feriados-list');
+  if (!el) return;
+  var hoy = new Date().toISOString().split('T')[0];
+  var proximos = FERIADOS_2026.filter(function(f){ return f.fecha >= hoy; });
+  if (!proximos.length) { el.innerHTML = '<div style="font-size:12px;color:var(--muted)">No hay feriados próximos en 2026.</div>'; return; }
+  var h = '';
+  proximos.forEach(function(f) {
+    var est = estadoFeriado(f.fecha);
+    var partes = f.fecha.split('-');
+    var fechaStr = partes[2] + '/' + partes[1] + '/' + partes[0];
+    var color = est === 'bloqueado' ? 'var(--danger)' : 'var(--success)';
+    var icon = est === 'bloqueado' ? '🔴' : '🟢';
+    var label = est === 'bloqueado' ? 'Bloqueado' : (est === 'maniana' ? 'Mañana habilitada' : (est === 'tarde' ? 'Tarde habilitada' : 'Día completo habilitado'));
+    h += '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:10px 12px;margin-bottom:8px">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+    h += '<div><div style="font-weight:700;font-size:13px">' + f.nombre + '</div>';
+    h += '<div style="font-size:11px;color:var(--muted)">' + fechaStr + '</div></div>';
+    h += '<span style="font-size:11px;color:' + color + ';font-weight:700">' + icon + ' ' + label + '</span>';
+    h += '</div>';
+    if (est === 'bloqueado') {
+      h += '<div style="display:flex;gap:6px">';
+      h += '<button onclick="setFeriado('' + f.fecha + '','completo')" style="flex:1;padding:6px;border:none;border-radius:8px;background:rgba(40,199,111,.2);color:var(--success);font-size:11px;font-weight:700;cursor:pointer">✅ Día completo</button>';
+      h += '<button onclick="setFeriado('' + f.fecha + '','maniana')" style="flex:1;padding:6px;border:none;border-radius:8px;background:rgba(21,101,192,.2);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer">🌅 Solo mañana</button>';
+      h += '<button onclick="setFeriado('' + f.fecha + '','tarde')" style="flex:1;padding:6px;border:none;border-radius:8px;background:rgba(255,159,67,.2);color:#ff9f43;font-size:11px;font-weight:700;cursor:pointer">🌆 Solo tarde</button>';
+      h += '</div>';
+    } else {
+      h += '<button onclick="setFeriado('' + f.fecha + '','bloqueado')" style="width:100%;padding:6px;border:none;border-radius:8px;background:rgba(234,84,85,.2);color:var(--danger);font-size:11px;font-weight:700;cursor:pointer">🔴 Volver a bloquear</button>';
+    }
+    h += '</div>';
+  });
+  el.innerHTML = h;
 }
 
 function renderConfigStats() {
