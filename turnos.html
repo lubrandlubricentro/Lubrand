@@ -740,15 +740,20 @@
       const dateStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const isSelDate = selDateStr === dateStr;
 
+      const feriadosCfg = JSON.parse(localStorage.getItem('lb_feriados') || '{}');
+      const FERIADOS_AR = ['2026-01-01','2026-02-16','2026-02-17','2026-03-24','2026-04-02','2026-04-03','2026-05-01','2026-05-25','2026-06-15','2026-06-20','2026-07-09','2026-08-17','2026-10-12','2026-11-20','2026-12-08','2026-12-25'];
+      const esFeriado = FERIADOS_AR.includes(dateStr) && !feriadosCfg[dateStr];
+
       let cls = 'cal-day';
       if (isPast) cls += ' past';
-      else if (isSun) cls += ' sunday';
+      else if (isSun || esFeriado) cls += ' sunday';
       else cls += ' avail';
       if (isToday && !isPast) cls += ' today';
       if (isSelDate) cls += ' sel';
 
-      const onclick = (!isPast && !isSun) ? `onclick="pickDay(${d}, '${dateStr}')"` : '';
-      grid.innerHTML += `<div class="${cls}" ${onclick}>${d}</div>`;
+      const onclick = (!isPast && !isSun && !esFeriado) ? `onclick="pickDay(${d}, '${dateStr}')"` : '';
+      const ferLabel = esFeriado ? '<div style="font-size:8px;color:#e8530a;margin-top:1px">feriado</div>' : '';
+      grid.innerHTML += `<div class="${cls}" ${onclick}>${d}${ferLabel}</div>`;
     }
   }
 
@@ -781,9 +786,12 @@
           ocupados.push(t.hora);
         }
       });
-      // Elegir slots según día de la semana
-      const diaSemana = selDate.getDay(); // 6 = sábado
-      const slotsDelDia = diaSemana === 6 ? SLOTS_SABADO : SLOTS_SEMANA;
+      // Elegir slots según día de la semana y feriados
+      const diaSemana = selDate.getDay();
+      let slotsDelDia = diaSemana === 6 ? SLOTS_SABADO : SLOTS_SEMANA;
+      const ferCfg2 = JSON.parse(localStorage.getItem('lb_feriados') || '{}')[dateStr];
+      if (ferCfg2 === 'maniana') slotsDelDia = slotsDelDia.filter(h => h < '12:00');
+      else if (ferCfg2 === 'tarde') slotsDelDia = slotsDelDia.filter(h => h >= '14:00');
       buildSlots(slotsDelDia, ocupados);
     } catch(e) {
       const diaSemana = selDate.getDay();
