@@ -1530,9 +1530,10 @@ function renderTurnos() {
     lista.push({id: t.id, fbId: null, fecha: t.fecha, hora: t.hora||'', obs: t.obs||'', origen: 'app',
       nom: c ? c.nombre+' '+(c.apellido||'') : '---',
       veh: c ? [c.marca,c.modelo,c.patente].filter(Boolean).join(' - ') : '',
-      tel: c ? c.telefono : '', clienteId: t.clienteId, estado: t.estado||'confirmado'});
+      tel: c ? (c.telefono||'') : '', clienteId: t.clienteId, estado: t.estado||'confirmado'});
   });
   turnosFirebase.forEach(function(t) {
+    if (t.origen === 'app') return; // evitar duplicados con turnos manuales
     var c = null;
     if (t.clienteId) { for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === t.clienteId) { c = clientes[i]; break; } } }
     lista.push({id: t.fbId, fbId: t.fbId, fecha: t.fecha, hora: t.hora||'', obs: t.servicio||'', origen: t.origen||'online',
