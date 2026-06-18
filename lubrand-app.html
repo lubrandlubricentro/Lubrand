@@ -134,7 +134,16 @@ textarea{resize:vertical;min-height:70px}
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen" style="position:fixed;inset:0;z-index:9999;background:#0f1117;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px">
-  <div style="font-family:'Arial Black',sans-serif;font-size:48px;color:#ff2222;letter-spacing:2px;margin-bottom:4px">LUBRAND</div>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 70" width="52" height="60">
+      <path d="M12 5 L12 52 Q12 62 22 62 L48 62 L48 54 L22 54 L22 5 Z" fill="#cc2222"/>
+      <path d="M12 46 Q12 62 22 62 L48 62 L48 55 Q34 57 26 50 Q18 42 12 46 Z" fill="#4ab0d9"/>
+    </svg>
+    <div style="text-align:left">
+      <div style="font-family:'Nunito',sans-serif;font-size:36px;font-weight:800;color:#fff;letter-spacing:1px;line-height:1">Lubrand</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:600;color:#4ab0d9;font-style:italic;line-height:1">lubricantes</div>
+    </div>
+  </div>
   <div style="font-size:12px;color:#7a7f9a;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:40px">Panel de Control</div>
   <div style="width:100%;max-width:320px">
     <label style="display:block;font-size:11px;font-weight:700;color:#7a7f9a;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase">Contraseña</label>
@@ -165,7 +174,16 @@ window.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <div class="hdr">
-  <div><small style="color:#ff4444">Panel de Control</small><h1 style="color:#ff2222">LUBRAND</h1></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 70" width="36" height="42">
+      <path d="M12 5 L12 52 Q12 62 22 62 L48 62 L48 54 L22 54 L22 5 Z" fill="#cc2222"/>
+      <path d="M12 46 Q12 62 22 62 L48 62 L48 55 Q34 57 26 50 Q18 42 12 46 Z" fill="#4ab0d9"/>
+    </svg>
+    <div>
+      <small style="color:#4ab0d9;font-size:9px;letter-spacing:2px;font-weight:700;text-transform:uppercase;display:block">Panel de Control</small>
+      <div style="font-family:'Nunito',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;line-height:1.1">Lubrand <span style="font-size:13px;font-weight:600;color:#4ab0d9;font-style:italic">lubricantes</span></div>
+    </div>
+  </div>
   <div style="display:flex;gap:8px;align-items:center">
     <button onclick="goTo('config')" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;touch-action:manipulation" title="Configuracion">⚙️</button>
   </div>
@@ -470,8 +488,8 @@ window.addEventListener('appinstalled', function() {
     theme_color: '#1565c0',
     orientation: 'portrait',
     icons: [
-      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="%231565c0" rx="20"/><text x="96" y="130" font-size="100" text-anchor="middle" fill="%23ff2222" font-family="sans-serif" font-weight="bold">L</text></svg>', sizes: '192x192', type: 'image/svg+xml' },
-      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="%231565c0" rx="50"/><text x="256" y="350" font-size="280" text-anchor="middle" fill="%23ff2222" font-family="sans-serif" font-weight="bold">L</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
+      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="%231a3a6b" rx="20"/><path d="M52 30 L52 130 Q52 150 72 150 L130 150 L130 132 L75 132 L75 30 Z" fill="%23cc2222"/><path d="M52 118 Q52 150 72 150 L130 150 L130 135 Q100 138 85 125 Q68 110 52 118 Z" fill="%234ab0d9"/></svg>', sizes: '192x192', type: 'image/svg+xml' },
+      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="%231a3a6b" rx="20"/><path d="M52 30 L52 130 Q52 150 72 150 L130 150 L130 132 L75 132 L75 30 Z" fill="%23cc2222"/><path d="M52 118 Q52 150 72 150 L130 150 L130 135 Q100 138 85 125 Q68 110 52 118 Z" fill="%234ab0d9"/></svg>', sizes: '512x512', type: 'image/svg+xml' }
     ]
   };
   var blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
