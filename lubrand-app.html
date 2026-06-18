@@ -724,7 +724,7 @@ var FERIADOS_2026 = [
 
 function esFeriado(fecha) {
   var cfg = feriadosConfig[fecha];
-  if (cfg === 'completo') return false; // desbloqueado completo
+  if (cfg === 'completo') return false;
   var f = FERIADOS_2026.find(function(x){ return x.fecha === fecha; });
   return !!f;
 }
@@ -732,7 +732,7 @@ function esFeriado(fecha) {
 function estadoFeriado(fecha) {
   var cfg = feriadosConfig[fecha];
   if (!cfg) return 'bloqueado';
-  return cfg; // 'completo', 'maniana', 'tarde'
+  return cfg;
 }
 
 function setFeriado(fecha, estado) {
@@ -1243,26 +1243,21 @@ function borrarTurnoDeTodasPartes(id) {
 }
 // ========== DETECCIÓN CLIENTE DESDE TURNO ONLINE ==========
 function buscarClientePorTurno(t) {
-  // t es un objeto turno Firebase con: nombre, telefono, patente, vehiculo
   var telNorm = (t.telefono || '').replace(/[^0-9]/g, '');
   var patNorm = (t.patente || '').replace(/\s/g, '').toUpperCase();
   var encontrado = null;
 
-  // Buscar por teléfono primero
   if (telNorm) {
     for (var i = 0; i < clientes.length; i++) {
       var cTel = (clientes[i].telefono || '').replace(/[^0-9]/g, '');
       if (cTel && cTel === telNorm) { encontrado = clientes[i]; break; }
     }
   }
-  // Si no encontró por teléfono, buscar por patente
   if (!encontrado && patNorm) {
     for (var j = 0; j < clientes.length; j++) {
       var c = clientes[j];
-      // Revisar patente raíz
       var cPat = (c.patente || '').replace(/\s/g, '').toUpperCase();
       if (cPat && cPat === patNorm) { encontrado = c; break; }
-      // Revisar patentes en vehiculos[]
       var vehs = c.vehiculos || [];
       for (var k = 0; k < vehs.length; k++) {
         var vPat = (vehs[k].patente || '').replace(/\s/g, '').toUpperCase();
@@ -1274,7 +1269,6 @@ function buscarClientePorTurno(t) {
 
   if (!encontrado) return { estado: 'nuevo', cliente: null };
 
-  // Cliente encontrado — verificar si le faltan datos relevantes
   var faltaTel = !encontrado.telefono && telNorm;
   var tienePatente = false;
   var vehs2 = encontrado.vehiculos && encontrado.vehiculos.length ? encontrado.vehiculos : (encontrado.patente ? [{patente: encontrado.patente}] : []);
@@ -1292,7 +1286,6 @@ function crearClienteDesdeTurno(fbId) {
   for (var i = 0; i < turnosFirebase.length; i++) { if (turnosFirebase[i].fbId === fbId) { t = turnosFirebase[i]; break; } }
   if (!t) { alert('No se encontró el turno'); return; }
 
-  // Separar nombre y apellido por el primer espacio
   var partes = (t.nombre || '').trim().split(' ');
   var nom = partes[0] || '';
   var ape = partes.slice(1).join(' ');
@@ -1330,10 +1323,8 @@ function completarClienteDesdeTurno(fbId, clienteId) {
   var telNorm = (t.telefono || '').replace(/[^0-9]/g, '');
   var patNorm = (t.patente || '').replace(/\s/g, '').toUpperCase();
 
-  // Completar teléfono solo si está vacío
   if (!c.telefono && telNorm) { c.telefono = t.telefono; actualizado = true; }
 
-  // Completar patente si no existe en ningún vehículo
   if (patNorm) {
     var vehs = c.vehiculos && c.vehiculos.length ? c.vehiculos : [];
     var tienePat = false;
@@ -1342,12 +1333,10 @@ function completarClienteDesdeTurno(fbId, clienteId) {
     }
     if (!tienePat) {
       if (vehs.length > 0) {
-        // Agregar patente al primer vehículo que no tenga patente
         var sinPat = false;
         for (var m = 0; m < vehs.length; m++) {
           if (!vehs[m].patente) { vehs[m].patente = patNorm; sinPat = true; actualizado = true; break; }
         }
-        // Si todos tienen patente, agregar un vehículo nuevo con los datos del turno
         if (!sinPat) {
           vehs.push({ marca: '', modelo: t.vehiculo || '', anio: '', patente: patNorm, km: '' });
           actualizado = true;
@@ -1371,7 +1360,6 @@ function completarClienteDesdeTurno(fbId, clienteId) {
 
 function completarTurno(id) {
   var cid = ''; var fec = ''; var obs = ''; var hora = '';
-  // Buscar en turnos locales
   for (var i = 0; i < turnos.length; i++) {
     if (turnos[i].id === id) {
       cid = turnos[i].clienteId;
@@ -1381,7 +1369,6 @@ function completarTurno(id) {
       break;
     }
   }
-  // Si no encontro, buscar en turnosFirebase (turnos online)
   if (!cid) {
     for (var k = 0; k < turnosFirebase.length; k++) {
       if (turnosFirebase[k].fbId === id) {
@@ -1395,18 +1382,15 @@ function completarTurno(id) {
   }
   _turnoCompletandoId = id;
 
-  // Buscar el turno Firebase para tener telefono y patente
   var _fbTurno = null;
   for (var fi = 0; fi < turnosFirebase.length; fi++) { if (turnosFirebase[fi].fbId === id) { _fbTurno = turnosFirebase[fi]; break; } }
 
-  // Navegar sin llamar goTo (que dispara renderAll)
   document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('on'); });
   document.querySelectorAll('.nb').forEach(function(el) { el.classList.remove('on'); });
   document.getElementById('v-servicios').classList.add('on');
   var nb = document.getElementById('nb-servicios');
   if (nb) nb.classList.add('on');
 
-  // Limpiar manualmente los campos sin llamar resetSerForm()
   document.getElementById('ser-busca').value = '';
   document.getElementById('ser-cid').value = '';
   document.getElementById('ser-vid').value = '';
@@ -1421,14 +1405,11 @@ function completarTurno(id) {
 
   document.getElementById('m-ser').classList.add('on');
 
-  // Guardar los datos para rellenar
   var _cid = cid; var _fec = fec; var _obs = obs;
 
   function _rellenarForm() {
     var _c = null;
-    // Buscar por clienteId primero
     if (_cid) { for (var x = 0; x < clientes.length; x++) { if (clientes[x].id === _cid) { _c = clientes[x]; break; } } }
-    // Si no encontro por clienteId, buscar por telefono o patente del turno Firebase
     if (!_c && _fbTurno) {
       var telNorm = (_fbTurno.telefono || '').replace(/[^0-9]/g, '');
       var patNorm = (_fbTurno.patente || '').replace(/\s/g, '').toUpperCase();
@@ -1464,7 +1445,6 @@ function completarTurno(id) {
     document.getElementById('ser-obs').value = _obs;
   }
 
-  // Rellenar varias veces para sobrevivir al onSnapshot de Firebase
   _rellenarForm();
   setTimeout(_rellenarForm, 500);
   setTimeout(_rellenarForm, 1200);
@@ -1523,6 +1503,9 @@ function renderTurnos() {
     return idsEnFb.indexOf(key) === -1;
   });
 
+  // ===== CORRECCIÓN: índice de turnos locales que SÍ pasaron el filtro =====
+  var idsLocales = locales.map(function(t){ return t.clienteId + '_' + t.fecha + '_' + t.hora; });
+
   var lista = [];
   locales.forEach(function(t) {
     var c = null;
@@ -1533,7 +1516,8 @@ function renderTurnos() {
       tel: c ? (c.telefono||'') : '', clienteId: t.clienteId, estado: t.estado||'confirmado'});
   });
   turnosFirebase.forEach(function(t) {
-    if (t.origen === 'app') return; // evitar duplicados con turnos manuales
+    // ===== CORRECCIÓN: solo saltear si el turno app YA está representado en locales =====
+    if (t.origen === 'app' && idsLocales.indexOf(t.clienteId + '_' + t.fecha + '_' + t.hora) !== -1) return;
     var c = null;
     if (t.clienteId) { for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === t.clienteId) { c = clientes[i]; break; } } }
     lista.push({id: t.fbId, fbId: t.fbId, fecha: t.fecha, hora: t.hora||'', obs: t.servicio||'', origen: t.origen||'online',
@@ -1551,7 +1535,6 @@ function renderTurnos() {
   var h = '';
   lista.forEach(function(t) {
     var esOnline = t.origen === 'online';
-    // Badge de estado de cliente (solo para turnos online)
     var badgeCli = '';
     var detCli = null;
     if (esOnline && t.fbId) {
@@ -1572,7 +1555,6 @@ function renderTurnos() {
     if (t.obs) h += '<div class="cs">Obs: ' + t.obs + '</div>';
     h += '</div><span class="ctag">' + (t.estado) + '</span></div>';
     h += '<div class="ca">';
-    // Botones de gestión de cliente para turnos online
     if (esOnline && detCli) {
       if (detCli.estado === 'nuevo') {
         h += '<button class="btn" style="background:rgba(21,101,192,.2);color:var(--accent);font-size:11px" onclick="crearClienteDesdeTurno(&#39;' + t.fbId + '&#39;)">➕ Crear cliente</button>';
@@ -1755,7 +1737,6 @@ function saveServicio() {
 }
 
 function resetSerForm() {
-  // Si hay un turno siendo completado, no resetear el form
   if (_turnoCompletandoId) return;
   document.getElementById('ser-busca').value = '';
   document.getElementById('ser-cid').value = '';
@@ -2152,7 +2133,6 @@ function verDetalleSem(enc) {
   var t;
   try { t = JSON.parse(decodeURIComponent(enc)); } catch(e) { return; }
 
-  // Detectar estado de cliente para turnos online
   var detCli = null;
   if (t.fbId) {
     var fbT = null;
@@ -2169,7 +2149,6 @@ function verDetalleSem(enc) {
   h += '<div style="font-weight:800;font-size:15px;margin-bottom:4px">' + (t.nombre||'---') + '</div>';
   h += '<div style="font-size:12px;color:var(--muted)">' + (t.vehiculo||'---') + (t.patente?' — '+t.patente:'') + '</div>';
   if (t.telefono) h += '<div style="font-size:12px;color:var(--muted);margin-top:4px">Tel: ' + t.telefono + '</div>';
-  // Badge de estado de cliente
   if (detCli) {
     if (detCli.estado === 'nuevo') h += '<div style="margin-top:8px"><span style="background:rgba(21,101,192,.15);color:var(--accent);font-size:11px;padding:3px 8px;border-radius:10px;font-weight:700">➕ Sin cliente registrado</span></div>';
     else if (detCli.estado === 'incompleto') h += '<div style="margin-top:8px"><span style="background:rgba(255,159,67,.15);color:#ff9f43;font-size:11px;padding:3px 8px;border-radius:10px;font-weight:700">⚠️ Cliente con datos faltantes</span></div>';
@@ -2180,7 +2159,6 @@ function verDetalleSem(enc) {
   h += '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;font-weight:700;letter-spacing:.5px">Servicio</div>';
   h += '<div style="font-size:13px">' + (t.servicio||'Sin descripción') + '</div>';
   h += '</div>';
-  // Botones de gestión de cliente
   if (detCli && detCli.estado === 'nuevo') {
     h += '<button onclick="crearClienteDesdeTurno(\''+t.fbId+'\');closeM(\'m-det-turno\')" class="bfull" style="background:rgba(21,101,192,.2);color:var(--accent);border:1px solid rgba(21,101,192,.3);margin-bottom:6px">➕ Crear cliente desde turno</button>';
   } else if (detCli && detCli.estado === 'incompleto') {
