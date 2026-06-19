@@ -551,8 +551,39 @@ function mostrarRankingMarcas() {
   var clientes = JSON.parse(localStorage.getItem('lb_clientes') || '[]');
   var mapaClientes = {};
   clientes.forEach(function(c) { mapaClientes[c.id] = c; });
-  var conteo = {};
+
+  // Armar lista de meses disponibles
+  var mesesDisp = {};
+  var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   servicios.forEach(function(s) {
+    if (s.fecha) {
+      var ym = s.fecha.substring(0, 7); // "2026-05"
+      mesesDisp[ym] = true;
+    }
+  });
+  var mesesOrdenados = Object.keys(mesesDisp).sort().reverse();
+
+  var container = document.getElementById('ranking-content');
+  if (!container) return;
+
+  // Selector de mes
+  var selVal = container.dataset.mes || '';
+  var selHtml = '<select id="ranking-mes-sel" onchange="rankingCambiarMes(this.value)" style="width:100%;background:var(--card);color:var(--text);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;font-size:14px;font-family:\'Nunito\',sans-serif;font-weight:700;margin-bottom:14px;cursor:pointer">';
+  selHtml += '<option value="">📅 Todos los meses</option>';
+  mesesOrdenados.forEach(function(ym) {
+    var p = ym.split('-');
+    var label = MESES[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    selHtml += '<option value="' + ym + '"' + (selVal === ym ? ' selected' : '') + '>' + label + '</option>';
+  });
+  selHtml += '</select>';
+
+  // Filtrar servicios por mes seleccionado
+  var servFiltrados = selVal
+    ? servicios.filter(function(s) { return s.fecha && s.fecha.substring(0, 7) === selVal; })
+    : servicios;
+
+  var conteo = {};
+  servFiltrados.forEach(function(s) {
     var cli = mapaClientes[s.clienteId] || {};
     var marca = (s.marca || cli.marca || '').trim();
     var modelo = (s.modelo || cli.modelo || '').trim();
@@ -562,14 +593,15 @@ function mostrarRankingMarcas() {
   });
   var lista = Object.keys(conteo).map(function(k) { return { nombre: k, cantidad: conteo[k] }; });
   lista.sort(function(a, b) { return b.cantidad - a.cantidad; });
-  var container = document.getElementById('ranking-content');
-  if (!container) return;
-  if (lista.length === 0) {
-    container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px;font-size:14px">No hay servicios registrados todavía.</div>';
+
+  if (servFiltrados.length === 0 || lista.length === 0) {
+    container.innerHTML = selHtml + '<div style="color:var(--muted);text-align:center;padding:30px;font-size:14px">No hay servicios para este período.</div>';
     return;
   }
+
   var maxCant = lista[0].cantidad;
-  var h = '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">Total de servicios analizados: <b style="color:var(--text)">' + servicios.length + '</b></div>';
+  var h = selHtml;
+  h += '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">Servicios analizados: <b style="color:var(--text)">' + servFiltrados.length + '</b></div>';
   lista.forEach(function(item, i) {
     var pct = Math.round((item.cantidad / maxCant) * 100);
     var medalla = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '<span style="display:inline-block;width:22px;text-align:center;font-size:12px;color:var(--muted)">' + (i + 1) + '</span>';
@@ -588,6 +620,12 @@ function mostrarRankingMarcas() {
     h += '</div>';
   });
   container.innerHTML = h;
+}
+
+function rankingCambiarMes(val) {
+  var container = document.getElementById('ranking-content');
+  if (container) container.dataset.mes = val;
+  mostrarRankingMarcas();
 }
 
 function openFab() {
