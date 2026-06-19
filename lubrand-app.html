@@ -548,10 +548,14 @@ function goTo(v) {
 
 function mostrarRankingMarcas() {
   var servicios = JSON.parse(localStorage.getItem('lb_servicios') || '[]');
+  var clientes = JSON.parse(localStorage.getItem('lb_clientes') || '[]');
+  var mapaClientes = {};
+  clientes.forEach(function(c) { mapaClientes[c.id] = c; });
   var conteo = {};
   servicios.forEach(function(s) {
-    var marca = (s.marca || '').trim();
-    var modelo = (s.modelo || '').trim();
+    var cli = mapaClientes[s.clienteId] || {};
+    var marca = (s.marca || cli.marca || '').trim();
+    var modelo = (s.modelo || cli.modelo || '').trim();
     if (!marca) return;
     var clave = marca + (modelo ? ' ' + modelo : '');
     conteo[clave] = (conteo[clave] || 0) + 1;
