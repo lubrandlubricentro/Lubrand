@@ -215,12 +215,23 @@ window.addEventListener('DOMContentLoaded', function() {
       <div class="n" id="st-cc" style="color:var(--success)">••••</div><div class="l">Cuentas Corrientes</div>
     </div>
   </div>
+  <button onclick="goTo('ranking')" style="width:100%;background:linear-gradient(135deg,rgba(255,193,7,.18),rgba(255,193,7,.07));border:1px solid rgba(255,193,7,.35);color:var(--text);border-radius:12px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;touch-action:manipulation;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <span>🏆 Ranking por Marca</span><span style="color:#ffc107;font-size:18px">▶</span>
+  </button>
   <button onclick="toggleEstPanel()" id="btn-est-abrir" style="width:100%;background:linear-gradient(135deg,rgba(21,101,192,.25),rgba(21,101,192,.1));border:1px solid rgba(21,101,192,.35);color:var(--text);border-radius:12px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;touch-action:manipulation;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
     <span>📊 Servicios por Mes</span><span id="est-arrow" style="color:var(--accent);font-size:18px">▼</span>
   </button>
   <div id="est-panel" style="display:none"></div>
   <div class="stitle" style="margin-top:4px">⏰ Recordatorios de Service</div>
   <div id="rec-list"></div>
+</div>
+
+<div id="v-ranking" class="view">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <button onclick="goTo('home')" style="background:rgba(255,255,255,.1);border:none;color:var(--text);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;touch-action:manipulation;flex-shrink:0">←</button>
+    <div class="stitle" style="margin-bottom:0">🏆 Ranking por Marca</div>
+  </div>
+  <div id="ranking-content"></div>
 </div>
 
 <div id="v-clientes" class="view">
@@ -532,6 +543,47 @@ function goTo(v) {
   if (nb) nb.classList.add('on');
   renderAll();
   if (v === 'config') { renderConfigStats(); renderFeriados(); }
+  if (v === 'ranking') { mostrarRankingMarcas(); }
+}
+
+function mostrarRankingMarcas() {
+  var servicios = JSON.parse(localStorage.getItem('lb_servicios') || '[]');
+  var conteo = {};
+  servicios.forEach(function(s) {
+    var marca = (s.marca || '').trim();
+    var modelo = (s.modelo || '').trim();
+    if (!marca) return;
+    var clave = marca + (modelo ? ' ' + modelo : '');
+    conteo[clave] = (conteo[clave] || 0) + 1;
+  });
+  var lista = Object.keys(conteo).map(function(k) { return { nombre: k, cantidad: conteo[k] }; });
+  lista.sort(function(a, b) { return b.cantidad - a.cantidad; });
+  var container = document.getElementById('ranking-content');
+  if (!container) return;
+  if (lista.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px;font-size:14px">No hay servicios registrados todavía.</div>';
+    return;
+  }
+  var maxCant = lista[0].cantidad;
+  var h = '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">Total de servicios analizados: <b style="color:var(--text)">' + servicios.length + '</b></div>';
+  lista.forEach(function(item, i) {
+    var pct = Math.round((item.cantidad / maxCant) * 100);
+    var medalla = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '<span style="display:inline-block;width:22px;text-align:center;font-size:12px;color:var(--muted)">' + (i + 1) + '</span>';
+    var barColor = i === 0 ? '#ffc107' : i === 1 ? '#b0bec5' : i === 2 ? '#cd7f32' : 'var(--accent)';
+    h += '<div style="background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:8px">';
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
+    h += '<div style="display:flex;align-items:center;gap:8px">';
+    h += '<span style="font-size:20px">' + medalla + '</span>';
+    h += '<span style="font-weight:800;font-size:15px;color:var(--text)">' + item.nombre + '</span>';
+    h += '</div>';
+    h += '<span style="font-weight:800;font-size:16px;color:' + barColor + '">' + item.cantidad + '</span>';
+    h += '</div>';
+    h += '<div style="background:rgba(255,255,255,.07);border-radius:6px;height:6px;overflow:hidden">';
+    h += '<div style="width:' + pct + '%;height:100%;background:' + barColor + ';border-radius:6px;transition:width .4s"></div>';
+    h += '</div>';
+    h += '</div>';
+  });
+  container.innerHTML = h;
 }
 
 function openFab() {
