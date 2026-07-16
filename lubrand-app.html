@@ -1278,7 +1278,8 @@ function saveTurno() {
   LS.set('lb_turnos', turnos);
 
   if (window._db && window._addDoc && c) {
-    var veh = c.vehiculos && c.vehiculos.length ? c.vehiculos[0] : {marca:c.marca||'',modelo:c.modelo||'',patente:c.patente||''};
+    var _fvi = vidx !== '' ? parseInt(vidx) : 0;
+    var veh = c.vehiculos && c.vehiculos.length ? (c.vehiculos[_fvi]||c.vehiculos[0]) : {marca:c.marca||'',modelo:c.modelo||'',patente:c.patente||''};
     var num = 'LB-' + Math.floor(1000+Math.random()*9000);
     var fechaDisplay = new Date(fec+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     window._addDoc(window._collection(window._db, 'turnos'), {
@@ -1622,9 +1623,10 @@ function renderTurnos() {
   locales.forEach(function(t) {
     var c = null;
     for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === t.clienteId) { c = clientes[i]; break; } }
+    var _tvi = t.vehiculoIdx||0; var _tvs = c ? ((c.vehiculos&&c.vehiculos.length)?c.vehiculos:[{marca:c.marca,modelo:c.modelo,patente:c.patente}]) : []; var _tv = _tvs[_tvi]||_tvs[0]||{};
     lista.push({id: t.id, fbId: null, fecha: t.fecha, hora: t.hora||'', obs: t.obs||'', origen: 'app',
       nom: c ? c.nombre+' '+(c.apellido||'') : '---',
-      veh: c ? [c.marca,c.modelo,c.patente].filter(Boolean).join(' - ') : '',
+      veh: c ? [_tv.marca,_tv.modelo,_tv.patente].filter(Boolean).join(' - ') : '',
       tel: c ? (c.telefono||'') : '', clienteId: t.clienteId, estado: t.estado||'confirmado'});
   });
   turnosFirebase.forEach(function(t) {
@@ -1876,7 +1878,8 @@ function verRemito(id) {
   var c = null;
   for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === s.clienteId) { c = clientes[j]; break; } }
   var nom = c ? c.nombre + ' ' + (c.apellido || '') : '---';
-  var veh = c ? [c.marca, c.modelo, c.anio].filter(Boolean).join(' ') + (c.patente ? ' - ' + c.patente : '') : '---';
+  var veh = '---';
+  if (c) { var _vi = s.vehiculoIdx||0; var _vs = (c.vehiculos&&c.vehiculos.length)?c.vehiculos:[{marca:c.marca,modelo:c.modelo,anio:c.anio,patente:c.patente}]; var _v = _vs[_vi]||_vs[0]||{}; veh = [_v.marca, _v.modelo, _v.anio].filter(Boolean).join(' ') + (_v.patente ? ' - ' + _v.patente : ''); }
   var km = s.km ? Number(s.km).toLocaleString() : '---';
   var proxKm = s.proxKm ? Number(s.proxKm).toLocaleString() : '---';
   var filas = '';
@@ -1937,7 +1940,7 @@ function waServDetalle(sid) {
   for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === s.clienteId) { c = clientes[j]; break; } }
   if (!c || !c.telefono) { alert('Sin telefono'); return; }
   var tel = c.telefono.replace(/[^0-9]/g, '');
-  var veh = [c.marca, c.modelo].filter(Boolean).join(' ') || 'vehiculo';
+  var _vi = s.vehiculoIdx||0; var _vs = (c.vehiculos&&c.vehiculos.length)?c.vehiculos:[{marca:c.marca,modelo:c.modelo}]; var _v = _vs[_vi]||_vs[0]||{}; var veh = [_v.marca, _v.modelo].filter(Boolean).join(' ') || 'vehiculo';
   var listaWA = s.sops && s.sops.length ? s.sops : (s.tipo ? s.tipo.split(', ') : []);
   var lineasWA = listaWA.map(function(sv){ return '- ' + sv; }).join('\n');
   var proxKm = s.proxKm ? Number(s.proxKm).toLocaleString() : '';
@@ -1964,7 +1967,8 @@ function renderServicios() {
     var c = null;
     for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === s.clienteId) { c = clientes[i]; break; } }
     var nom = c ? c.nombre + ' ' + (c.apellido || '') : '---';
-    var veh = c ? [c.marca, c.modelo, c.patente].filter(Boolean).join(' - ') : '';
+    var veh = '';
+    if (c) { var _vi = s.vehiculoIdx||0; var _vs = (c.vehiculos&&c.vehiculos.length)?c.vehiculos:[{marca:c.marca,modelo:c.modelo,patente:c.patente}]; var _v = _vs[_vi]||_vs[0]||{}; veh = [_v.marca, _v.modelo, _v.patente].filter(Boolean).join(' - '); }
     h += '<div class="card">';
     h += '<div style="display:flex;justify-content:space-between;align-items:flex-start">';
     h += '<div><div class="cn">' + nom + '</div>';
@@ -2064,10 +2068,11 @@ function enviarCC(sid) {
   var c = null;
   for (var j = 0; j < clientes.length; j++) { if (clientes[j].id === s.clienteId) { c = clientes[j]; break; } }
   if (!c) return;
+  var _vi = s.vehiculoIdx||0; var _vs = (c.vehiculos&&c.vehiculos.length)?c.vehiculos:[{marca:c.marca,modelo:c.modelo,patente:c.patente}]; var _v = _vs[_vi]||_vs[0]||{};
   var entrada = {
     id: LS.uid(), servicioId: s.id, clienteId: s.clienteId,
     clienteNom: c.nombre + ' ' + (c.apellido || ''),
-    vehiculo: [c.marca, c.modelo, c.patente].filter(Boolean).join(' '),
+    vehiculo: [_v.marca, _v.modelo, _v.patente].filter(Boolean).join(' '),
     fecha: s.fecha, tipo: s.tipo, total: s.total || 0,
     estado: 'pendiente', creadoEn: new Date().toISOString()
   };
@@ -2186,7 +2191,7 @@ function renderSemanal() {
     var c = null;
     for (var i=0;i<clientes.length;i++){if(clientes[i].id===t.clienteId){c=clientes[i];break;}}
     var veh = c ? ([c.marca,c.modelo].filter(Boolean).join(' ')||'') : '';
-    var vobj = c && c.vehiculos && c.vehiculos.length ? c.vehiculos[0] : null;
+    var _svi = t.vehiculoIdx||0; var vobj = c && c.vehiculos && c.vehiculos.length ? (c.vehiculos[_svi]||c.vehiculos[0]) : null;
     todosT.push({fecha:t.fecha, hora:t.hora||'', bloqueado:false, estado:t.estado||'confirmado', nombre:c?(c.apellido||c.nombre):'---', vehiculo:vobj?([vobj.marca,vobj.modelo].filter(Boolean).join(' ')):veh, patente:vobj?(vobj.patente||''):(c?c.patente||'':''), servicio:t.obs||'', telefono:c?c.telefono||'':'', fbId:null, origen:'app', localId:t.id});
   });
 
