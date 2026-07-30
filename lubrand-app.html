@@ -521,6 +521,7 @@ var turnos = LS.get('lb_turnos');
 var turnosFirebase = [];
 var fbConectado = false;
 var servicios = LS.get('lb_servicios');
+var recPospuesto = (function(){ try { return JSON.parse(localStorage.getItem('lb_recPospuesto') || '{}'); } catch(e) { return {}; } })();
 
 var SOPS = [
   {k:'f_aceite', l:'F. de aceite'},
@@ -2000,6 +2001,7 @@ function calcRec() {
     hist.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
     var ult = hist[0];
     var dias = Math.floor((hoyMs - new Date(ult.fecha).getTime()) / (24 * 60 * 60 * 1000));
+    if (recPospuesto[c.id] && hoyMs < recPospuesto[c.id]) continue;
     if (dias >= 90) out.push({c: c, s: ult, dias: dias});
   }
   return out;
@@ -2026,6 +2028,18 @@ function waRec(cid) {
   }
 }
 
+function posponerRec(cid) {
+  var c = null;
+  for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
+  if (!c) return;
+  var nom = c.nombre + (c.apellido ? ' ' + c.apellido : '');
+  if (!confirm('¿Posponer el recordatorio de ' + nom + ' por 90 dias?')) return;
+  recPospuesto[cid] = new Date().getTime() + 90 * 24 * 60 * 60 * 1000;
+  localStorage.setItem('lb_recPospuesto', JSON.stringify(recPospuesto));
+  renderRecordatorios();
+  renderStats();
+}
+
 function renderRecordatorios() {
   var recs = calcRec();
   var el = document.getElementById('rec-list');
@@ -2034,8 +2048,9 @@ function renderRecordatorios() {
   recs.forEach(function(r) {
     var c = r.c;
     var vencFec = new Date(new Date(r.s.fecha).getTime() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString('es-AR');
-    h += '<div class="rb">';
-    h += '<div style="display:flex;gap:10px;align-items:flex-start">';
+    h += '<div class="rb" style="position:relative">';
+    h += '<button onclick="posponerRec(\'' + c.id + '\')" title="Posponer 90 dias" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border:none;border-radius:50%;background:rgba(255,255,255,.08);color:var(--muted);font-size:18px;line-height:1;cursor:pointer;touch-action:manipulation">&times;</button>';
+    h += '<div style="display:flex;gap:10px;align-items:flex-start;padding-right:32px">';
     h += '<div style="font-size:22px">⚠️</div>';
     h += '<div><div style="font-weight:800;color:var(--danger)">' + c.nombre + ' ' + (c.apellido || '') + '</div>';
     h += '<div style="font-size:12px;color:var(--muted)">' + (c.patente || '') + ' ' + [c.marca, c.modelo].filter(Boolean).join(' ') + '</div>';
