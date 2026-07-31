@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a3a6b">
+<title>Lubrand - Historial de Servicios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Nunito', sans-serif;
+    background:#0f1e33;
+    color:#e8eef7;
+    min-height:100vh;
+    padding:0 0 40px;
+  }
+  .top {
+    background:#1a3a6b;
+    padding:22px 18px 20px;
+    text-align:center;
+    border-bottom:3px solid #cc2222;
+  }
+  .brand {
+    font-family:'Nunito', sans-serif;
+    font-weight:900;
+    font-size:34px;
+    letter-spacing:1px;
+    color:#fff;
+    line-height:1;
+  }
+  .brand .l { color:#cc2222; }
+  .brand .cur { color:#4ab0d9; }
+  .sub {
+    font-style:italic;
+    color:#4ab0d9;
+    font-size:14px;
+    font-weight:700;
+    margin-top:4px;
+  }
+  .wrap { max-width:520px; margin:0 auto; padding:18px 16px 0; }
+  .cli-card {
+    background:#16294a;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .cli-nom { font-size:20px; font-weight:900; color:#fff; }
+  .veh {
+    margin-top:8px;
+    font-size:14px;
+    color:#c7d3e6;
+  }
+  .veh .pat {
+    display:inline-block;
+    background:#0f1e33;
+    border:1px solid rgba(74,176,217,.4);
+    border-radius:6px;
+    padding:1px 8px;
+    font-weight:800;
+    color:#4ab0d9;
+    margin-left:4px;
+  }
+  .sec-tit {
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:#4ab0d9;
+    margin:0 2px 10px;
+  }
+  .serv {
+    background:#16294a;
+    border:1px solid rgba(255,255,255,.08);
+    border-left:4px solid #cc2222;
+    border-radius:12px;
+    padding:13px 14px;
+    margin-bottom:11px;
+  }
+  .serv-top {
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:6px;
+  }
+  .serv-fec { font-weight:900; font-size:15px; color:#fff; }
+  .serv-km { font-size:12px; color:#9fb1cc; font-weight:700; }
+  .serv-tipo { font-size:14px; font-weight:700; color:#e8eef7; margin-bottom:3px; }
+  .serv-sops { font-size:13px; color:#c7d3e6; line-height:1.5; }
+  .serv-prox {
+    margin-top:7px;
+    font-size:12px;
+    color:#4ab0d9;
+    font-weight:700;
+  }
+  .serv-obs { margin-top:5px; font-size:12px; color:#9fb1cc; font-style:italic; }
+  .btn-turno {
+    display:block;
+    width:100%;
+    background:#25D366;
+    color:#fff;
+    text-align:center;
+    text-decoration:none;
+    font-family:'Nunito', sans-serif;
+    font-weight:900;
+    font-size:16px;
+    padding:15px;
+    border-radius:12px;
+    margin:6px 0 20px;
+    box-shadow:0 4px 14px rgba(37,211,102,.3);
+  }
+  .estado { text-align:center; padding:40px 20px; color:#9fb1cc; }
+  .estado .ic { font-size:40px; margin-bottom:12px; }
+  .foot {
+    text-align:center;
+    font-size:11px;
+    color:#61789b;
+    margin-top:14px;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand"><span class="l">L</span>UBRAND</div>
+    <div class="sub">lubricantes</div>
+  </div>
+
+  <div class="wrap">
+    <div id="cont">
+      <div class="estado"><div class="ic">⏳</div>Cargando historial...</div>
+    </div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDu-Zv4AxnWyVeX0zkg7KC7QeEfPL6Yl48",
+    authDomain: "lubrand-turnos.firebaseapp.com",
+    projectId: "lubrand-turnos",
+    storageBucket: "lubrand-turnos.firebasestorage.app",
+    messagingSenderId: "195172045902",
+    appId: "1:195172045902:web:806d1448daf9f3783f5f1f"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const TURNOS_URL = "https://lubrandlubricentro.github.io/Lubrand/turnos.html";
+  const cont = document.getElementById('cont');
+
+  function esc(t) {
+    return (t == null ? '' : String(t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function fmtFecha(f) {
+    if (!f) return '';
+    var d = new Date(f);
+    if (isNaN(d)) return esc(f);
+    var dd = ('0' + d.getDate()).slice(-2);
+    var mm = ('0' + (d.getMonth() + 1)).slice(-2);
+    return dd + '/' + mm + '/' + d.getFullYear();
+  }
+
+  function botonTurno() {
+    return '<a class="btn-turno" href="' + TURNOS_URL + '">📅 Sacar turno online</a>';
+  }
+
+  function pintarNoEncontrado() {
+    cont.innerHTML =
+      '<div class="estado"><div class="ic">🔍</div>No encontramos el historial de este cliente todavia.</div>' +
+      botonTurno() +
+      '<div class="foot">Lubrand Lubricentro · Agustin Alvarez 1179<br>Nueve de Julio, Buenos Aires</div>';
+  }
+
+  function pintarFicha(d) {
+    var nom = esc((d.nombre || '') + ' ' + (d.apellido || '')).trim() || 'Cliente';
+    var vehs = Array.isArray(d.vehiculos) ? d.vehiculos : [];
+    var servs = Array.isArray(d.servicios) ? d.servicios : [];
+
+    var h = '<div class="cli-card"><div class="cli-nom">' + nom + '</div>';
+    vehs.forEach(function(v) {
+      var mm = esc([v.marca, v.modelo].filter(Boolean).join(' '));
+      var pat = v.patente ? '<span class="pat">' + esc(v.patente) + '</span>' : '';
+      if (mm || pat) h += '<div class="veh">🚗 ' + (mm || 'Vehiculo') + ' ' + pat + '</div>';
+    });
+    h += '</div>';
+
+    h += botonTurno();
+
+    if (!servs.length) {
+      h += '<div class="estado" style="padding:24px"><div class="ic">📋</div>Todavia no hay servicios registrados.</div>';
+    } else {
+      h += '<div class="sec-tit">Historial de servicios</div>';
+      servs.forEach(function(s) {
+        h += '<div class="serv">';
+        h += '<div class="serv-top"><span class="serv-fec">' + fmtFecha(s.fecha) + '</span>';
+        if (s.km) h += '<span class="serv-km">' + esc(s.km) + ' km</span>';
+        h += '</div>';
+        if (s.tipo) h += '<div class="serv-tipo">' + esc(s.tipo) + '</div>';
+        if (Array.isArray(s.sops) && s.sops.length) h += '<div class="serv-sops">• ' + s.sops.map(esc).join('<br>• ') + '</div>';
+        if (s.proxKm) h += '<div class="serv-prox">🔧 Proximo service: ' + esc(s.proxKm) + ' km</div>';
+        if (s.detalle) h += '<div class="serv-obs">' + esc(s.detalle) + '</div>';
+        h += '</div>';
+      });
+    }
+
+    h += '<div class="foot">Lubrand Lubricentro · Agustin Alvarez 1179<br>Nueve de Julio, Buenos Aires</div>';
+    cont.innerHTML = h;
+  }
+
+  async function cargar() {
+    var params = new URLSearchParams(window.location.search);
+    var cid = params.get('c') || params.get('cliente');
+    if (!cid) { pintarNoEncontrado(); return; }
+    try {
+      var snap = await getDoc(doc(db, 'fichas', cid));
+      if (snap.exists()) { pintarFicha(snap.data()); }
+      else { pintarNoEncontrado(); }
+    } catch (e) {
+      console.log('error', e);
+      cont.innerHTML = '<div class="estado"><div class="ic">⚠️</div>No se pudo cargar. Revisa tu conexion e intenta de nuevo.</div>';
+    }
+  }
+
+  cargar();
+</script>
+</body>
+</html>
