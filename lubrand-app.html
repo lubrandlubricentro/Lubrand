@@ -102,7 +102,7 @@ textarea{resize:vertical;min-height:70px}
 </style>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, addDoc, doc, setDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   const firebaseConfig = {
     apiKey: "AIzaSyDu-Zv4AxnWyVeX0zkg7KC7QeEfPL6Yl48",
     authDomain: "lubrand-turnos.firebaseapp.com",
@@ -118,6 +118,7 @@ textarea{resize:vertical;min-height:70px}
   window._getDocs = getDocs;
   window._addDoc = addDoc;
   window._doc = doc;
+  window._setDoc = setDoc;
   window._updateDoc = updateDoc;
   window._deleteDoc = deleteDoc;
   window._query = query;
@@ -316,6 +317,12 @@ window.addEventListener('DOMContentLoaded', function() {
     <h3>💾 Exportar Datos</h3>
     <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Guardá una copia de seguridad de todos tus clientes, servicios, turnos y cuentas.</p>
     <button class="bfull exp" onclick="exportarDatos()">⬇️ Exportar copia de seguridad</button>
+  </div>
+
+  <div class="cfg-box">
+    <h3>☁️ Sincronizar QR a la nube</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Sube el historial de tus clientes ya cargados a la nube para que sus códigos QR muestren todo. Apretalo una vez al empezar. No duplica nada.</p>
+    <button class="bfull exp" onclick="sincronizarTodasLasFichas()">☁️ Sincronizar todos los clientes</button>
   </div>
 
   <div class="cfg-box">
@@ -1805,6 +1812,45 @@ function selSerVeh(idx) {
   }
 }
 
+function subirFichaCliente(cid) {
+  if (!window._db || !window._setDoc || !window._doc) return Promise.resolve();
+  try {
+    var c = null;
+    for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === cid) { c = clientes[i]; break; } }
+    if (!c) return Promise.resolve();
+    var vehs = (c.vehiculos && c.vehiculos.length) ? c.vehiculos : ((c.marca || c.patente) ? [{marca: c.marca, modelo: c.modelo, anio: c.anio, patente: c.patente, km: c.km}] : []);
+    var vehsPub = vehs.map(function(v) { return {marca: v.marca || '', modelo: v.modelo || '', patente: v.patente || ''}; });
+    var hist = servicios.filter(function(s) { return s.clienteId === cid; });
+    hist.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+    var histPub = hist.map(function(s) {
+      return {
+        fecha: s.fecha || '', km: s.km || '', proxKm: s.proxKm || '',
+        tipo: s.tipo || '', sops: s.sops || [], detalle: s.detalle || '',
+        vehiculoIdx: (typeof s.vehiculoIdx === 'number') ? s.vehiculoIdx : 0
+      };
+    });
+    var ficha = {
+      nombre: c.nombre || '', apellido: c.apellido || '',
+      vehiculos: vehsPub, servicios: histPub,
+      actualizado: new Date().toISOString()
+    };
+    return window._setDoc(window._doc(window._db, 'fichas', cid), ficha).catch(function(e) { console.log('ficha no subida', e); });
+  } catch(e) { console.log('subirFichaCliente error', e); return Promise.resolve(); }
+}
+
+function sincronizarTodasLasFichas() {
+  if (!window._db) { alert('No hay conexion con Firebase. Revisa tu internet e intenta de nuevo.'); return; }
+  if (!confirm('Se va a subir el historial de TODOS los clientes a la nube (para los QR).\n\nPodes apretar este boton las veces que quieras, no duplica nada.\n\nContinuar?')) return;
+  var proms = [];
+  for (var i = 0; i < clientes.length; i++) { proms.push(subirFichaCliente(clientes[i].id)); }
+  var total = clientes.length;
+  Promise.all(proms).then(function() {
+    alert('Listo! Se sincronizaron ' + total + ' clientes a la nube.');
+  }).catch(function() {
+    alert('Se sincronizo, pero hubo algun error. Podes volver a apretar el boton para reintentar.');
+  });
+}
+
 function saveServicio() {
   var cid = document.getElementById('ser-cid').value;
   var fec = document.getElementById('ser-fec').value;
@@ -1847,6 +1893,7 @@ function saveServicio() {
   }
   LS.set('lb_clientes', clientes);
   LS.set('lb_servicios', servicios);
+  subirFichaCliente(cid);
   if (_turnoCompletandoId) { borrarTurnoDeTodasPartes(_turnoCompletandoId); _turnoCompletandoId = null; }
   resetSerForm(); closeM('m-ser'); renderAll();
 }
