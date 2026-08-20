@@ -2507,6 +2507,13 @@ function mostRecuperar(id){
   LS.set('lb_mostrador', mostVentas); LS.set('lb_mostrador_pap', mostPap);
   renderMostrador();
 }
+function mostVaciarPapelera(){
+  if (!mostPap.length) return;
+  if (!confirm('¿Vaciar la papelera? Se borran definitivamente ' + mostPap.length + ' venta(s) y NO se pueden recuperar.')) return;
+  mostPap = [];
+  LS.set('lb_mostrador_pap', mostPap);
+  renderMostrador();
+}
 function mostCobrar(id){
   for (var i=0;i<mostVentas.length;i++){ if(mostVentas[i].id===id){ mostVentas[i].estado='pagado'; mostVentas[i].fechaPago=hoy(); break; } }
   LS.set('lb_mostrador', mostVentas);
@@ -2593,7 +2600,7 @@ function renderMostrador(){
   if (lp){
     if (!mostPap.length){ lp.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">Papelera vacía</div>'; }
     else {
-      var h='';
+      var h='<button class="bfull" style="background:rgba(234,84,85,.15);color:var(--danger);border:1px solid rgba(234,84,85,.3);margin-top:0;margin-bottom:10px;font-size:13px;padding:10px" onclick="mostVaciarPapelera()">🗑️ Vaciar papelera ('+mostPap.length+')</button>';
       mostPap.forEach(function(v){
         h += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">'
           + '<div><div class="cn">'+mostShow(v.total)+'</div><div class="cs">'+(v.clienteNom? v.clienteNom+' · ':'')+v.pagos.length+' pago(s)</div></div>'
