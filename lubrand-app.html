@@ -385,6 +385,14 @@ window.addEventListener('DOMContentLoaded', function() {
 </div>
 </div>
 
+<div id="v-deudas" class="view">
+  <div class="stitle">🧾 Deudas por cliente
+    <button onclick="deudaToggleVis()" id="btn-deuda-vis" style="background:rgba(255,255,255,.1);border:none;color:var(--text);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;touch-action:manipulation">👁 Visible</button>
+  </div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Suma lo que cada cliente debe en Servicios + Mostrador. Es solo para ver; para cobrar, entrá a Cuentas o a Mostrador.</p>
+  <div id="deudas-list"></div>
+</div>
+
 <nav class="nav">
   <button class="nb on" id="nb-home" onclick="goTo('home')"><span class="ni">🏠</span>Inicio</button>
   <button class="nb" id="nb-clientes" onclick="goTo('clientes')"><span class="ni">👤</span>Clientes</button>
@@ -392,6 +400,7 @@ window.addEventListener('DOMContentLoaded', function() {
   <button class="nb" id="nb-servicios" onclick="goTo('servicios')"><span class="ni">🏮</span>Servicios</button>
   <button class="nb" id="nb-cuentas" onclick="goTo('cuentas')"><span class="ni">💰</span>Cuentas</button>
   <button class="nb" id="nb-mostrador" onclick="goTo('mostrador')"><span class="ni">🛒</span>Mostrador</button>
+  <button class="nb" id="nb-deudas" onclick="goTo('deudas')"><span class="ni">🧾</span>Deudas</button>
 </nav>
 <button class="fab" onclick="openFab()">+</button>
 
@@ -645,6 +654,7 @@ function goTo(v) {
   if (v === 'config') { renderConfigStats(); renderFeriados(); }
   if (v === 'ranking') { mostrarRankingMarcas(); }
   if (v === 'mostrador') { renderMostrador(); }
+  if (v === 'deudas') { renderDeudas(); }
 }
 
 function mostrarRankingMarcas() {
@@ -2614,6 +2624,55 @@ function renderMostrador(){
       lp.innerHTML = h;
     }
   }
+}
+
+// ========== DEUDAS UNIFICADAS (solo lectura) ==========
+var deudaVis = false;
+function deudaToggleVis(){
+  deudaVis = !deudaVis;
+  var b=document.getElementById('btn-deuda-vis'); if(b) b.textContent = deudaVis?'🙈 Ocultar':'👁 Visible';
+  renderDeudas();
+}
+function deudaPlata(n){ return '$'+Math.abs(Number(n)||0).toLocaleString('es-AR'); }
+function deudaShow(n){ return deudaVis? deudaPlata(n):'••••'; }
+function renderDeudas(){
+  var b=document.getElementById('btn-deuda-vis'); if(b) b.textContent = deudaVis?'🙈 Ocultar':'👁 Visible';
+  var map={};
+  (cuentas||[]).forEach(function(x){
+    if (x.estado==='pendiente'){
+      var k=x.clienteId||('nom:'+x.clienteNom);
+      if(!map[k]) map[k]={nom:x.clienteNom||'Sin nombre', serv:0, most:0};
+      map[k].serv += (x.total||0);
+    }
+  });
+  (mostVentas||[]).forEach(function(v){
+    if (v.saldo>0 && v.estado==='pendiente'){
+      var k=v.clienteId||('nom:'+v.clienteNom);
+      if(!map[k]) map[k]={nom:v.clienteNom||'Sin nombre', serv:0, most:0};
+      map[k].most += v.saldo;
+    }
+  });
+  var lista=[]; var totalGlobal=0;
+  Object.keys(map).forEach(function(k){
+    var m=map[k]; var t=m.serv+m.most;
+    if(t>0){ lista.push({nom:m.nom, serv:m.serv, most:m.most, total:t}); totalGlobal+=t; }
+  });
+  lista.sort(function(a,b){ return b.total-a.total; });
+  var el=document.getElementById('deudas-list'); if(!el) return;
+  var head='<div class="card" style="background:rgba(21,101,192,.08);border-color:rgba(21,101,192,.3);margin-bottom:14px">'
+    + '<div style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Te deben en total</div>'
+    + '<div style="font-size:32px;font-weight:800;color:var(--accent)">'+deudaShow(totalGlobal)+'</div></div>';
+  if(!lista.length){ el.innerHTML='<div class="empty"><div class="ei">🧾</div><p>Nadie te debe nada</p></div>'; return; }
+  var h=head;
+  lista.forEach(function(c){
+    h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">'
+      + '<div class="cn">'+c.nom+'</div>'
+      + '<div style="font-size:20px;font-weight:800;color:var(--danger)">'+deudaShow(c.total)+'</div></div>';
+    if(c.serv>0) h+='<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px"><span>🔧 Servicios</span><span>'+deudaShow(c.serv)+'</span></div>';
+    if(c.most>0) h+='<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:'+(c.serv>0?'2px':'6px')+'"><span>🛒 Mostrador</span><span>'+deudaShow(c.most)+'</span></div>';
+    h+='</div>';
+  });
+  el.innerHTML=h;
 }
 
 // ========== VISTA SEMANAL TURNOS ==========
