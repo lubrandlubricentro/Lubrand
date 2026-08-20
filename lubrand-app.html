@@ -341,12 +341,57 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 
+<div id="v-mostrador" class="view">
+  <div class="stitle">🛒 Mostrador
+    <button onclick="mostToggleVis()" id="btn-most-vis" style="background:rgba(255,255,255,.1);border:none;color:var(--text);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;touch-action:manipulation">👁 Visible</button>
+  </div>
+  <div class="sgrid">
+    <div class="sc"><div class="n" id="most-hoy">$0</div><div class="l">Vendido hoy</div></div>
+    <div class="sc"><div class="n" id="most-mes">$0</div><div class="l">Vendido este mes</div></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span style="color:var(--muted)">💵 En caja hoy</span><b id="most-caja">$0</b></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span style="color:var(--muted)">🧾 En cheques hoy</span><b id="most-cheques">$0</b></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-top:1px solid rgba(255,255,255,.07);margin-top:3px;padding-top:7px"><span style="color:var(--muted)">📒 A cobrar (pendiente)</span><b id="most-cobrar" style="color:var(--danger)">$0</b></div>
+  </div>
+  <button class="bfull p" onclick="mostAbrirVenta()">＋ Nueva venta de mostrador</button>
+  <div class="div"></div>
+  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Ventas de hoy</div>
+  <div id="most-ventas-hoy"></div>
+  <div class="div"></div>
+  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📒 Cuenta corriente de mostrador</div>
+  <div id="most-cc"></div>
+  <div class="div"></div>
+  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🗑️ Papelera</div>
+  <div id="most-pap"></div>
+</div>
+
+<div class="mo" id="m-most">
+<div class="modal">
+  <div class="mtitle">🛒 Nueva venta
+    <button class="mclose" onclick="closeM('m-most')">X</button>
+  </div>
+  <label>Importe total de la venta</label>
+  <input type="number" id="most-total" inputmode="numeric" placeholder="0" oninput="mostOnTotal()">
+  <label>Pagos recibidos</label>
+  <div id="most-pagos"></div>
+  <button class="btn bp" style="flex:none;min-width:auto;padding:8px 12px;margin-top:2px" onclick="mostAddPago()">＋ Agregar pago</button>
+  <div id="most-resumen" style="margin-top:12px"></div>
+  <div id="most-cli-box" style="display:none;margin-top:10px">
+    <label id="most-cli-lbl">Cliente (queda saldo)</label>
+    <select id="most-cli"><option value="">— Elegir cliente —</option></select>
+  </div>
+  <button class="bfull p" onclick="mostGuardar()">Guardar venta</button>
+</div>
+</div>
+
 <nav class="nav">
   <button class="nb on" id="nb-home" onclick="goTo('home')"><span class="ni">🏠</span>Inicio</button>
   <button class="nb" id="nb-clientes" onclick="goTo('clientes')"><span class="ni">👤</span>Clientes</button>
   <button class="nb" id="nb-turnos" onclick="goTo('turnos')"><span class="ni">📅</span>Turnos</button>
   <button class="nb" id="nb-servicios" onclick="goTo('servicios')"><span class="ni">🏮</span>Servicios</button>
   <button class="nb" id="nb-cuentas" onclick="goTo('cuentas')"><span class="ni">💰</span>Cuentas</button>
+  <button class="nb" id="nb-mostrador" onclick="goTo('mostrador')"><span class="ni">🛒</span>Mostrador</button>
 </nav>
 <button class="fab" onclick="openFab()">+</button>
 
@@ -599,6 +644,7 @@ function goTo(v) {
   renderAll();
   if (v === 'config') { renderConfigStats(); renderFeriados(); }
   if (v === 'ranking') { mostrarRankingMarcas(); }
+  if (v === 'mostrador') { renderMostrador(); }
 }
 
 function mostrarRankingMarcas() {
@@ -2297,6 +2343,266 @@ function renderCuentas() {
     h += '</div></div>';
   });
   el.innerHTML = h;
+}
+
+// ========== MOSTRADOR (Paso 2 - aislado, Opcion A) ==========
+var mostVentas = LS.get('lb_mostrador');
+var mostPap = LS.get('lb_mostrador_pap');
+var mostVis = false;
+var mostPagos = [];
+
+function mostPlata(n){ return '$' + Math.abs(Number(n)||0).toLocaleString('es-AR'); }
+function mostShow(n){ return mostVis ? mostPlata(n) : '••••'; }
+function mostCap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function mostMes(){ return hoy().slice(0,7); }
+function mostSetTxt(id,t){ var e=document.getElementById(id); if(e) e.textContent=t; }
+
+function mostToggleVis(){
+  mostVis = !mostVis;
+  var b = document.getElementById('btn-most-vis');
+  if (b) b.textContent = mostVis ? '🙈 Ocultar' : '👁 Visible';
+  renderMostrador();
+}
+
+function mostAbrirVenta(){
+  mostPagos = [{medio:'efectivo', monto:'', chqNum:'', chqFecha:'', tocado:false}];
+  document.getElementById('most-total').value = '';
+  mostRenderPagos();
+  document.getElementById('m-most').classList.add('on');
+  setTimeout(function(){ document.getElementById('most-total').focus(); }, 100);
+}
+function mostTotalNum(){ return parseInt(document.getElementById('most-total').value,10) || 0; }
+function mostSumaPagos(){ var s=0; mostPagos.forEach(function(p){ s += parseInt(p.monto,10)||0; }); return s; }
+
+function mostOnTotal(){
+  if (mostPagos.length===1 && !mostPagos[0].tocado){
+    mostPagos[0].monto = mostTotalNum() ? String(mostTotalNum()) : '';
+    mostRenderPagos();
+  } else { mostRecalc(); }
+}
+function mostSetPago(i,campo,val){
+  mostPagos[i][campo] = val;
+  if (campo==='monto') mostPagos[i].tocado = true;
+  if (campo==='medio') mostRenderPagos(); else mostRecalc();
+}
+function mostCompletar(i){
+  var otros=0; mostPagos.forEach(function(p,idx){ if(idx!==i) otros += parseInt(p.monto,10)||0; });
+  var falta = mostTotalNum() - otros;
+  mostPagos[i].monto = falta>0 ? String(falta) : '0';
+  mostPagos[i].tocado = true;
+  mostRenderPagos();
+}
+function mostAddPago(){ mostPagos.push({medio:'efectivo', monto:'', chqNum:'', chqFecha:'', tocado:false}); mostRenderPagos(); }
+function mostQuitaPago(i){ mostPagos.splice(i,1); mostRenderPagos(); }
+
+function mostRenderPagos(){
+  var cont = document.getElementById('most-pagos'); if(!cont) return;
+  cont.innerHTML = '';
+  if (mostPagos.length===0){
+    cont.innerHTML = '<div style="background:var(--card);border:1px dashed rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;color:var(--muted);font-size:12px">No paga nada ahora — todo va a cuenta</div>';
+    mostRecalc(); return;
+  }
+  var medios = ['efectivo','transferencia','tarjeta','aplicaciones','cheque'];
+  mostPagos.forEach(function(p,i){
+    var row = document.createElement('div');
+    row.style.cssText = 'background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;margin-bottom:8px';
+    var opts = '';
+    medios.forEach(function(m){ opts += '<option value="'+m+'"'+(p.medio===m?' selected':'')+'>'+mostCap(m)+'</option>'; });
+    var html = '<div style="display:flex;gap:6px;align-items:center">'
+      + '<select style="margin-bottom:0;flex:1.2" onchange="mostSetPago('+i+',\'medio\',this.value)">'+opts+'</select>'
+      + '<input type="number" inputmode="numeric" placeholder="monto" value="'+p.monto+'" style="margin-bottom:0;flex:1" oninput="mostSetPago('+i+',\'monto\',this.value)">'
+      + '<button class="btn bp" style="flex:none;min-width:auto;padding:8px 10px" onclick="mostCompletar('+i+')">resto</button>'
+      + '<button class="btn bd" style="flex:none;min-width:auto;padding:8px 10px" onclick="mostQuitaPago('+i+')">✕</button>'
+      + '</div>';
+    if (p.medio==='cheque'){
+      html += '<div style="display:flex;gap:6px;margin-top:6px">'
+        + '<input type="text" inputmode="numeric" placeholder="N° cheque" value="'+p.chqNum+'" style="margin-bottom:0;flex:1" oninput="mostSetPago('+i+',\'chqNum\',this.value)">'
+        + '<input type="date" value="'+p.chqFecha+'" style="margin-bottom:0;flex:1" oninput="mostSetPago('+i+',\'chqFecha\',this.value)">'
+        + '</div>';
+    }
+    row.innerHTML = html;
+    cont.appendChild(row);
+  });
+  mostRecalc();
+}
+
+function mostRecalc(){
+  var total = mostTotalNum();
+  var cobrado = mostSumaPagos();
+  var dif = total - cobrado;
+  var r = document.getElementById('most-resumen');
+  var estado;
+  if (dif>0) estado = '<div style="display:flex;justify-content:space-between;font-weight:800;color:var(--danger);margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,.1)"><span>Queda a cuenta</span><span>'+mostPlata(dif)+'</span></div>';
+  else if (dif<0) estado = '<div style="display:flex;justify-content:space-between;font-weight:800;color:var(--accent);margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,.1)"><span>A favor del cliente</span><span>'+mostPlata(dif)+'</span></div>';
+  else estado = '<div style="display:flex;justify-content:space-between;font-weight:800;color:var(--success);margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,.1)"><span>Pago completo</span><span>✓</span></div>';
+  r.style.cssText = 'background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px';
+  r.innerHTML = '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted)"><span>Total venta</span><b style="color:var(--text)">'+mostPlata(total)+'</b></div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:3px"><span>Cobrado</span><b style="color:var(--text)">'+mostPlata(cobrado)+'</b></div>'
+    + estado;
+  var box = document.getElementById('most-cli-box');
+  box.style.display = (dif!==0) ? 'block' : 'none';
+  document.getElementById('most-cli-lbl').textContent = dif>0 ? 'Cliente (queda a deber)' : 'Cliente (saldo a favor)';
+  mostLlenarClientes();
+}
+
+function mostLlenarClientes(){
+  var sel = document.getElementById('most-cli'); if(!sel) return;
+  var prev = sel.value;
+  var arr = clientes.slice().sort(function(a,b){ return ((a.apellido||'')+a.nombre).localeCompare((b.apellido||'')+b.nombre); });
+  var h = '<option value="">— Elegir cliente —</option>';
+  arr.forEach(function(c){ h += '<option value="'+c.id+'">'+(c.apellido? c.apellido+' ':'')+c.nombre+'</option>'; });
+  sel.innerHTML = h;
+  sel.value = prev;
+}
+
+function mostGuardar(){
+  var total = mostTotalNum();
+  if (total<=0){ alert('Poné el importe total'); return; }
+  for (var i=0;i<mostPagos.length;i++){
+    var p = mostPagos[i];
+    var m = parseInt(p.monto,10);
+    if (!m || m<=0){ alert('Completá el monto de cada pago (o quitá el que no uses)'); return; }
+    if (p.medio==='cheque'){
+      if (!(''+p.chqNum).trim()){ alert('Falta el N° de cheque'); return; }
+      if (!p.chqFecha){ alert('Falta la fecha del cheque'); return; }
+    }
+  }
+  var cobrado = mostSumaPagos();
+  var saldo = total - cobrado;
+  var clienteId=null, clienteNom=null;
+  if (saldo!==0){
+    var sel = document.getElementById('most-cli');
+    if (!sel.value){ alert('Elegí el cliente para el saldo'); return; }
+    var c=null; for (var j=0;j<clientes.length;j++){ if(clientes[j].id===sel.value){ c=clientes[j]; break; } }
+    if (!c){ alert('Cliente no encontrado'); return; }
+    clienteId = c.id; clienteNom = (c.apellido? c.apellido+' ':'')+c.nombre;
+  }
+  var venta = {
+    id: LS.uid(), fecha: hoy(), ts: new Date().toISOString(),
+    total: total, saldo: saldo,
+    estado: (saldo>0 ? 'pendiente' : 'pagado'),
+    pagos: mostPagos.map(function(p){ return {medio:p.medio, monto:parseInt(p.monto,10), chqNum:p.chqNum, chqFecha:p.chqFecha}; }),
+    clienteId: clienteId, clienteNom: clienteNom
+  };
+  mostVentas.push(venta);
+  LS.set('lb_mostrador', mostVentas);
+  closeM('m-most');
+  renderMostrador();
+}
+
+function mostBorrar(id){
+  if (!confirm('¿Mover esta venta a la papelera?')) return;
+  var idx=-1; for (var i=0;i<mostVentas.length;i++){ if(mostVentas[i].id===id){ idx=i; break; } }
+  if (idx<0) return;
+  var v = mostVentas.splice(idx,1)[0];
+  mostPap.unshift(v);
+  LS.set('lb_mostrador', mostVentas); LS.set('lb_mostrador_pap', mostPap);
+  renderMostrador();
+}
+function mostRecuperar(id){
+  var idx=-1; for (var i=0;i<mostPap.length;i++){ if(mostPap[i].id===id){ idx=i; break; } }
+  if (idx<0) return;
+  var v = mostPap.splice(idx,1)[0];
+  mostVentas.push(v);
+  LS.set('lb_mostrador', mostVentas); LS.set('lb_mostrador_pap', mostPap);
+  renderMostrador();
+}
+function mostCobrar(id){
+  for (var i=0;i<mostVentas.length;i++){ if(mostVentas[i].id===id){ mostVentas[i].estado='pagado'; mostVentas[i].fechaPago=hoy(); break; } }
+  LS.set('lb_mostrador', mostVentas);
+  renderMostrador();
+}
+
+function renderMostrador(){
+  var b = document.getElementById('btn-most-vis'); if (b) b.textContent = mostVis ? '🙈 Ocultar' : '👁 Visible';
+  var hoyStr = hoy(); var mesStr = mostMes();
+  var vHoy = mostVentas.filter(function(v){ return v.fecha===hoyStr; });
+  var vMes = mostVentas.filter(function(v){ return (v.fecha||'').slice(0,7)===mesStr; });
+  var totHoy=0, totMes=0, caja=0, cheques=0;
+  vHoy.forEach(function(v){ totHoy+=v.total; v.pagos.forEach(function(p){ if(p.medio==='cheque') cheques+=p.monto; else caja+=p.monto; }); });
+  vMes.forEach(function(v){ totMes+=v.total; });
+  var aCobrar=0;
+  mostVentas.forEach(function(v){ if(v.saldo>0 && v.estado==='pendiente') aCobrar+=v.saldo; });
+
+  mostSetTxt('most-hoy', mostShow(totHoy));
+  mostSetTxt('most-mes', mostShow(totMes));
+  mostSetTxt('most-caja', mostShow(caja));
+  mostSetTxt('most-cheques', mostShow(cheques));
+  mostSetTxt('most-cobrar', mostShow(aCobrar));
+
+  var lv = document.getElementById('most-ventas-hoy');
+  if (lv){
+    if (!vHoy.length){ lv.innerHTML = '<div class="empty"><div class="ei">🛒</div><p>Sin ventas hoy</p></div>'; }
+    else {
+      var h='';
+      vHoy.slice().reverse().forEach(function(v){
+        var medios='';
+        v.pagos.forEach(function(p,k){ var t=mostCap(p.medio); if(p.medio==='cheque') t+=' N°'+p.chqNum+' ('+fFecha(p.chqFecha)+')'; medios += (k?' · ':'')+t+' '+mostShow(p.monto); });
+        if (!v.pagos.length) medios='Sin pago (a cuenta)';
+        var tag, col;
+        if (v.saldo>0){ tag='Debe '+mostShow(v.saldo); col='var(--danger)'; }
+        else if (v.saldo<0){ tag='A favor '+mostShow(v.saldo); col='var(--accent)'; }
+        else { tag='Cobrado'; col='var(--success)'; }
+        h += '<div class="card">'
+          + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+          + '<div><div class="cn">'+mostShow(v.total)+'</div>'
+          + '<div class="cs">'+medios+'</div>'
+          + (v.clienteNom? '<div class="cs">'+v.clienteNom+'</div>':'')
+          + '</div>'
+          + '<span class="ctag" style="color:'+col+'">'+tag+'</span>'
+          + '</div>'
+          + '<div class="ca"><button class="btn bd" onclick="mostBorrar(\''+v.id+'\')">🗑️ Borrar</button></div>'
+          + '</div>';
+      });
+      lv.innerHTML = h;
+    }
+  }
+
+  var lc = document.getElementById('most-cc');
+  if (lc){
+    var pend = mostVentas.filter(function(v){ return v.saldo>0 && v.estado==='pendiente'; });
+    if (!pend.length){ lc.innerHTML = '<div class="empty"><div class="ei">📒</div><p>Sin saldos pendientes</p></div>'; }
+    else {
+      var grupos = {};
+      pend.forEach(function(v){
+        var k = v.clienteId || 'x';
+        if (!grupos[k]) grupos[k] = {nom: v.clienteNom||'Sin nombre', total:0, items:[]};
+        grupos[k].total += v.saldo; grupos[k].items.push(v);
+      });
+      var h='';
+      Object.keys(grupos).forEach(function(k){
+        var g = grupos[k];
+        h += '<div class="card">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center">'
+          + '<div class="cn">'+g.nom+'</div>'
+          + '<div style="font-size:18px;font-weight:800;color:var(--danger)">'+mostShow(g.total)+'</div>'
+          + '</div>';
+        g.items.forEach(function(v){
+          h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px;color:var(--muted)">'
+            + '<span>'+fFecha(v.fecha)+' · '+mostShow(v.saldo)+'</span>'
+            + '<button class="btn bsuc" style="flex:none;min-width:auto;padding:5px 10px" onclick="mostCobrar(\''+v.id+'\')">Cobrar</button>'
+            + '</div>';
+        });
+        h += '</div>';
+      });
+      lc.innerHTML = h;
+    }
+  }
+
+  var lp = document.getElementById('most-pap');
+  if (lp){
+    if (!mostPap.length){ lp.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">Papelera vacía</div>'; }
+    else {
+      var h='';
+      mostPap.forEach(function(v){
+        h += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">'
+          + '<div><div class="cn">'+mostShow(v.total)+'</div><div class="cs">'+(v.clienteNom? v.clienteNom+' · ':'')+v.pagos.length+' pago(s)</div></div>'
+          + '<button class="btn bp" style="flex:none;min-width:auto;padding:6px 12px" onclick="mostRecuperar(\''+v.id+'\')">↩︎ Recuperar</button>'
+          + '</div></div>';
+      });
+      lp.innerHTML = h;
+    }
+  }
 }
 
 // ========== VISTA SEMANAL TURNOS ==========
