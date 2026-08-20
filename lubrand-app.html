@@ -307,7 +307,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   <div class="cfg-box">
     <h3>💾 Exportar Datos</h3>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Guardá una copia de seguridad de todos tus clientes, servicios, turnos y cuentas.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Guardá una copia de seguridad de todos tus clientes, servicios, turnos, cuentas y ventas de mostrador.</p>
     <button class="bfull exp" onclick="exportarDatos()">⬇️ Exportar copia de seguridad</button>
   </div>
 
@@ -1009,7 +1009,9 @@ function exportarDatos() {
     clientes: LS.get('lb_clientes'),
     turnos: LS.get('lb_turnos'),
     servicios: LS.get('lb_servicios'),
-    cuentas: LS.get('lb_cuentas')
+    cuentas: LS.get('lb_cuentas'),
+    mostrador: LS.get('lb_mostrador'),
+    mostrador_pap: LS.get('lb_mostrador_pap')
   };
   var blob = new Blob([JSON.stringify(datos, null, 2)], {type: 'application/json'});
   var url = URL.createObjectURL(blob);
@@ -1040,6 +1042,8 @@ function importarDatos(input) {
       if (datos.turnos) { LS.set('lb_turnos', datos.turnos); turnos = datos.turnos; }
       if (datos.servicios) { LS.set('lb_servicios', datos.servicios); servicios = datos.servicios; }
       if (datos.cuentas) { LS.set('lb_cuentas', datos.cuentas); }
+      if (datos.mostrador) { LS.set('lb_mostrador', datos.mostrador); mostVentas = datos.mostrador; }
+      if (datos.mostrador_pap) { LS.set('lb_mostrador_pap', datos.mostrador_pap); mostPap = datos.mostrador_pap; }
       msg.style.display = 'block';
       msg.style.background = 'rgba(40,199,111,.15)';
       msg.style.border = '1px solid rgba(40,199,111,.4)';
