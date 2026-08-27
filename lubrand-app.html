@@ -1225,12 +1225,29 @@ function verCli(id) {
   h += '<div class="card">';
   h += '<div style="color:var(--accent);font-weight:700;margin-bottom:6px">Servicios (' + hist.length + ')</div>';
   if (!hist.length) { h += '<div style="font-size:12px;color:var(--muted)">Sin servicios</div>'; }
-  else { hist.forEach(function(s) {
-    h += '<div style="border-bottom:1px solid rgba(255,255,255,.06);padding:6px 0;font-size:12px">';
-    h += '<b>' + fFecha(s.fecha) + '</b> -- ' + s.tipo;
-    if (s.total) h += ' <span style="color:var(--accent);font-weight:700">$' + Number(s.total).toLocaleString('es-AR') + '</span>';
-    h += '</div>';
-  }); }
+  else {
+    var _pintarSer = function(s) {
+      var x = '<div style="border-bottom:1px solid rgba(255,255,255,.06);padding:6px 0;font-size:12px">';
+      x += '<b>' + fFecha(s.fecha) + '</b> -- ' + s.tipo;
+      if (s.total) x += ' <span style="color:var(--accent);font-weight:700">$' + Number(s.total).toLocaleString('es-AR') + '</span>';
+      x += '</div>';
+      return x;
+    };
+    vehs.forEach(function(v, vi) {
+      var deVeh = hist.filter(function(s) { return (s.vehiculoIdx||0) === vi; });
+      if (!deVeh.length) return;
+      deVeh.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+      var etq = [v.marca, v.modelo].filter(Boolean).join(' ') + (v.patente ? ' - ' + v.patente : '');
+      h += '<div style="margin-top:8px;margin-bottom:2px;font-size:12px;font-weight:700;color:var(--accent)">🚗 ' + (etq || ('Vehículo ' + (vi+1))) + '</div>';
+      deVeh.forEach(function(s) { h += _pintarSer(s); });
+    });
+    var _huerf = hist.filter(function(s) { return (s.vehiculoIdx||0) >= vehs.length; });
+    if (_huerf.length) {
+      _huerf.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+      h += '<div style="margin-top:8px;margin-bottom:2px;font-size:12px;font-weight:700;color:var(--muted)">🚗 Otros</div>';
+      _huerf.forEach(function(s) { h += _pintarSer(s); });
+    }
+  }
   h += '</div>';
   h += '<div class="ca">';
   if (c.telefono) h += '<button class="btn bw" onclick="waContacto(\'' + c.id + '\')">WA</button>';
