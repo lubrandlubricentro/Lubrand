@@ -2221,7 +2221,22 @@ function renderServicios() {
     for (var i = 0; i < clientes.length; i++) { if (clientes[i].id === s.clienteId) { c = clientes[i]; break; } }
     return (c ? c.nombre + ' ' + (c.apellido || '') + ' ' + (c.patente || '') : ' ' + s.tipo).toLowerCase().indexOf(q) !== -1;
   });
-  list.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+  var _cLatest = {}, _vLatest = {};
+  servicios.forEach(function(s) {
+    var t = new Date(s.fecha).getTime() || 0;
+    if (t > (_cLatest[s.clienteId] || 0)) _cLatest[s.clienteId] = t;
+    var vk = s.clienteId + '|' + (s.vehiculoIdx || 0);
+    if (t > (_vLatest[vk] || 0)) _vLatest[vk] = t;
+  });
+  list.sort(function(a, b) {
+    var ca = _cLatest[a.clienteId] || 0, cb = _cLatest[b.clienteId] || 0;
+    if (ca !== cb) return cb - ca;
+    if (a.clienteId !== b.clienteId) return a.clienteId < b.clienteId ? -1 : 1;
+    var va = _vLatest[a.clienteId + '|' + (a.vehiculoIdx || 0)] || 0, vb = _vLatest[b.clienteId + '|' + (b.vehiculoIdx || 0)] || 0;
+    if (va !== vb) return vb - va;
+    if ((a.vehiculoIdx || 0) !== (b.vehiculoIdx || 0)) return (a.vehiculoIdx || 0) - (b.vehiculoIdx || 0);
+    return new Date(b.fecha) - new Date(a.fecha);
+  });
   if (!list.length) { el.innerHTML = '<div class="empty"><div class="ei">🏮</div><p>No hay servicios</p></div>'; return; }
   var h = '';
   list.forEach(function(s) {
