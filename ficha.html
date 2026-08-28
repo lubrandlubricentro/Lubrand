@@ -196,17 +196,33 @@
       h += '<div class="estado" style="padding:24px"><div class="ic">📋</div>Todavia no hay servicios registrados.</div>';
     } else {
       h += '<div class="sec-tit">Historial de servicios</div>';
-      servs.forEach(function(s) {
-        h += '<div class="serv">';
-        h += '<div class="serv-top"><span class="serv-fec">' + fmtFecha(s.fecha) + '</span>';
-        if (s.km) h += '<span class="serv-km">' + esc(s.km) + ' km</span>';
-        h += '</div>';
-        if (s.tipo) h += '<div class="serv-tipo">' + esc(s.tipo) + '</div>';
-        if (Array.isArray(s.sops) && s.sops.length) h += '<div class="serv-sops">• ' + s.sops.map(esc).join('<br>• ') + '</div>';
-        if (s.proxKm) h += '<div class="serv-prox">🔧 Proximo service: ' + esc(s.proxKm) + ' km</div>';
-        if (s.detalle) h += '<div class="serv-obs">' + esc(s.detalle) + '</div>';
-        h += '</div>';
+      var pintarUno = function(s) {
+        var x = '<div class="serv">';
+        x += '<div class="serv-top"><span class="serv-fec">' + fmtFecha(s.fecha) + '</span>';
+        if (s.km) x += '<span class="serv-km">' + esc(s.km) + ' km</span>';
+        x += '</div>';
+        if (s.tipo) x += '<div class="serv-tipo">' + esc(s.tipo) + '</div>';
+        if (Array.isArray(s.sops) && s.sops.length) x += '<div class="serv-sops">• ' + s.sops.map(esc).join('<br>• ') + '</div>';
+        if (s.proxKm) x += '<div class="serv-prox">🔧 Proximo service: ' + esc(s.proxKm) + ' km</div>';
+        if (s.detalle) x += '<div class="serv-obs">' + esc(s.detalle) + '</div>';
+        x += '</div>';
+        return x;
+      };
+      vehs.forEach(function(v, vi) {
+        var deVeh = servs.filter(function(s) { return (s.vehiculoIdx || 0) === vi; });
+        if (!deVeh.length) return;
+        deVeh.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+        var mm = esc([v.marca, v.modelo].filter(Boolean).join(' '));
+        var pat = v.patente ? '<span class="pat">' + esc(v.patente) + '</span>' : '';
+        h += '<div class="veh" style="margin-top:14px">🚗 ' + (mm || 'Vehiculo') + ' ' + pat + '</div>';
+        deVeh.forEach(function(s) { h += pintarUno(s); });
       });
+      var huerf = servs.filter(function(s) { return (s.vehiculoIdx || 0) >= vehs.length; });
+      if (huerf.length) {
+        huerf.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+        h += '<div class="veh" style="margin-top:14px">🚗 Otros</div>';
+        huerf.forEach(function(s) { h += pintarUno(s); });
+      }
     }
 
     h += '<div class="foot">Lubrand Lubricentro · Agustin Alvarez 1179<br>Nueve de Julio, Buenos Aires</div>';
